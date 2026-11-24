@@ -56,7 +56,27 @@ button {
 <input id="msg" placeholder="यहाँ अपना संदेश लिखो...">
 <button onclick="sendMessage()">Send</button>
 <script>
-function sendMessage() {
+function send(){
+ const q = input.value.trim();
+ if(!q) return;
+
+ addMessage(q,"user");
+ input.value = "";
+
+ const hindi = /[\u0900-\u097F]/.test(q);
+
+ if(hindi){
+   addMessage(
+     "नमस्ते! मैं ARYA हूँ। आपका सवाल मुझे मिल गया है। मैं हिंदी में आपकी सहायता करने के लिए तैयार हूँ।",
+     "bot"
+   );
+ } else {
+   addMessage(
+     "Hello! I am ARYA. I have received your question and I am ready to assist you in English.",
+     "bot"
+   );
+ }
+}
   let input = document.getElementById("msg");
   let text = input.value.trim();
   if (!text) return;
