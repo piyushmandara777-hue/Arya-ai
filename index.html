@@ -1,5 +1,4 @@
 
- 
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -10,397 +9,142 @@
 
 <style>
 *{box-sizing:border-box}
-
 :root{
- --bg:#080f1e;
- --panel:#101b30;
- --cyan:#32d9ff;
- --blue:#387cff;
- --muted:#91a6c5;
+ --bg:#080f1e;--panel:#101b30;--cyan:#32d9ff;
+ --blue:#387cff;--muted:#91a6c5
 }
-
 body{
- margin:0;
- font-family:Arial,sans-serif;
- background:
- radial-gradient(ellipse at 50% 0%,#17335b,transparent 55%),
- var(--bg);
- color:#f4f8ff;
- min-height:100vh;
+ margin:0;font-family:Arial,sans-serif;
+ background:radial-gradient(ellipse at 50% 0%,#17335b,transparent 55%),var(--bg);
+ color:#f4f8ff;min-height:100vh
 }
-
 header{
- height:65px;
- padding:0 18px;
- display:flex;
- align-items:center;
- justify-content:space-between;
- background:#0b1426;
- border-bottom:1px solid #263c5b;
+ height:65px;padding:0 18px;display:flex;
+ align-items:center;justify-content:space-between;
+ background:#0b1426;border-bottom:1px solid #263c5b
 }
-
-.logo{
- font-size:22px;
- color:var(--cyan);
- font-weight:bold;
- letter-spacing:3px;
-}
-
-.online{
- color:#54e9a5;
- font-size:11px;
- letter-spacing:1px;
-}
-
-main{
- max-width:850px;
- margin:auto;
- padding:15px;
- padding-bottom:170px;
-}
-
-.hero{
- text-align:center;
- padding:12px 0;
-}
-
-.hero h2{
- font-size:23px;
- letter-spacing:2px;
- margin:8px;
-}
-
-.hero p{
- color:var(--muted);
- font-size:13px;
-}
-
+.logo{font-size:22px;color:var(--cyan);font-weight:bold;letter-spacing:3px}
+.online{color:#54e9a5;font-size:11px;letter-spacing:1px}
+main{max-width:850px;margin:auto;padding:15px;padding-bottom:170px}
+.hero{text-align:center;padding:12px 0}
+.hero h2{font-size:23px;letter-spacing:2px;margin:8px}
+.hero p{color:var(--muted);font-size:13px}
 .core{
- width:125px;
- height:125px;
- margin:23px auto;
- border-radius:50%;
- display:flex;
- align-items:center;
- justify-content:center;
- position:relative;
+ width:125px;height:125px;margin:23px auto;border-radius:50%;
+ display:flex;align-items:center;justify-content:center;position:relative;
  background:radial-gradient(circle,#1c5480,#0c1930 70%);
  border:2px solid var(--cyan);
- box-shadow:0 0 30px #00cfff66,inset 0 0 25px #00cfff44;
+ box-shadow:0 0 30px #00cfff66,inset 0 0 25px #00cfff44
 }
-
-.core span{
- color:var(--cyan);
- font-size:28px;
- font-weight:bold;
- letter-spacing:3px;
-}
-
+.core span{color:var(--cyan);font-size:28px;font-weight:bold;letter-spacing:3px}
 .core:before,.core:after{
- content:"";
- position:absolute;
- border-radius:50%;
- border:1px dashed #00cfff99;
- inset:-10px;
- animation:rotate 9s linear infinite;
+ content:"";position:absolute;border-radius:50%;
+ border:1px dashed #00cfff99;inset:-10px;
+ animation:rotate 9s linear infinite
 }
-
-.core:after{
- inset:-18px;
- border-color:#387cff88;
- animation-duration:14s;
- animation-direction:reverse;
-}
-
-@keyframes rotate{
- to{transform:rotate(360deg)}
-}
-
-.listening .core,.speaking .core{
- animation:pulse 1s infinite alternate;
-}
-
-@keyframes pulse{
- to{transform:scale(1.05)}
-}
-
-.wave{
- height:28px;
- display:flex;
- align-items:center;
- justify-content:center;
- gap:4px;
-}
-
-.wave i{
- height:7px;
- width:4px;
- border-radius:5px;
- background:var(--cyan);
-}
-
-.listening .wave i,.speaking .wave i{
- animation:wave .7s infinite alternate;
-}
-
+.core:after{inset:-18px;border-color:#387cff88;animation-duration:14s;animation-direction:reverse}
+@keyframes rotate{to{transform:rotate(360deg)}}
+.listening .core,.speaking .core{animation:pulse 1s infinite alternate}
+@keyframes pulse{to{transform:scale(1.05)}}
+.wave{height:28px;display:flex;align-items:center;justify-content:center;gap:4px}
+.wave i{height:7px;width:4px;border-radius:5px;background:var(--cyan)}
+.listening .wave i,.speaking .wave i{animation:wave .7s infinite alternate}
 .wave i:nth-child(2n){animation-delay:.2s}
 .wave i:nth-child(3n){animation-delay:.4s}
-
-@keyframes wave{
- to{height:25px}
-}
-
-#status{
- color:var(--cyan);
- text-align:center;
- font-size:11px;
- letter-spacing:1px;
- margin:16px 0;
-}
-
+@keyframes wave{to{height:25px}}
+#status{color:var(--cyan);text-align:center;font-size:11px;letter-spacing:1px;margin:16px 0}
 .chatbox{
- background:#101b30dd;
- border:1px solid #263e60;
- border-radius:18px;
- padding:14px;
- box-shadow:0 10px 40px #0005;
+ background:#101b30dd;border:1px solid #263e60;border-radius:18px;
+ padding:14px;box-shadow:0 10px 40px #0005
 }
-
 .chat-header{
- display:flex;
- justify-content:space-between;
- align-items:center;
- border-bottom:1px solid #263e60;
- padding:5px 3px 13px;
+ display:flex;justify-content:space-between;align-items:center;
+ border-bottom:1px solid #263e60;padding:5px 3px 13px
 }
-
-.chat-title{
- color:var(--cyan);
- font-size:12px;
- letter-spacing:2px;
-}
-
-.chat-actions{
- display:flex;
- gap:7px;
-}
-
+.chat-title{color:var(--cyan);font-size:12px;letter-spacing:2px}
+.chat-actions{display:flex;gap:7px}
 .small-btn{
- width:34px;
- height:32px;
- display:flex;
- align-items:center;
- justify-content:center;
- background:#14243a;
- color:var(--cyan);
- border:1px solid #294766;
- border-radius:9px;
+ width:34px;height:32px;display:flex;align-items:center;justify-content:center;
+ background:#14243a;color:var(--cyan);border:1px solid #294766;border-radius:9px
 }
-
-#chat{
- height:310px;
- overflow-y:auto;
- padding:8px 2px;
- scroll-behavior:smooth;
-}
-
+#chat{height:310px;overflow-y:auto;padding:8px 2px;scroll-behavior:smooth}
 .message{
- padding:12px 14px;
- margin:12px 0;
- border-radius:13px;
- line-height:1.65;
- font-size:14px;
- white-space:pre-wrap;
- overflow-wrap:anywhere;
+ padding:12px 14px;margin:12px 0;border-radius:13px;
+ line-height:1.65;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere
 }
-
-.user{
- background:linear-gradient(120deg,#174c7a,#19345d);
- margin-left:30px;
- border:1px solid #28608b;
-}
-
-.bot{
- background:#19263c;
- border:1px solid #293e5c;
- margin-right:30px;
-}
-
-.time{
- display:block;
- font-size:10px;
- color:#8ca6c5;
- margin-top:7px;
-}
-
-.typing{
- color:var(--cyan);
- font-size:12px;
- padding:10px;
-}
-
+.user{background:linear-gradient(120deg,#174c7a,#19345d);margin-left:30px;border:1px solid #28608b}
+.bot{background:#19263c;border:1px solid #293e5c;margin-right:30px}
+.time{display:block;font-size:10px;color:#8ca6c5;margin-top:7px}
+.typing{color:var(--cyan);font-size:12px;padding:10px}
 footer{
- position:fixed;
- bottom:0;
- left:0;
- right:0;
- padding:11px;
- background:#091323f5;
- border-top:1px solid #263c5b;
- backdrop-filter:blur(15px);
+ position:fixed;bottom:0;left:0;right:0;padding:11px;
+ background:#091323f5;border-top:1px solid #263c5b;backdrop-filter:blur(15px)
 }
-
-.input-area{
- max-width:850px;
- margin:auto;
- display:flex;
- gap:7px;
-}
-
+.input-area{max-width:850px;margin:auto;display:flex;gap:7px}
 input{
- flex:1;
- min-width:0;
- padding:14px;
- border-radius:12px;
- background:#111e32;
- color:white;
- border:1px solid #38506f;
- outline:none;
- font-size:14px;
+ flex:1;min-width:0;padding:14px;border-radius:12px;background:#111e32;
+ color:white;border:1px solid #38506f;outline:none;font-size:14px
 }
-
 input:focus{border-color:var(--cyan)}
-
-button{
- cursor:pointer;
- transition:.2s;
-}
-
+button{cursor:pointer;transition:.2s}
 button:active{transform:scale(.94)}
-
 .icon-btn{
- width:45px;
- height:45px;
- display:flex;
- align-items:center;
- justify-content:center;
- flex-shrink:0;
- border-radius:12px;
- border:1px solid #294766;
- background:#14243a;
- color:var(--cyan);
+ width:45px;height:45px;display:flex;align-items:center;justify-content:center;
+ flex-shrink:0;border-radius:12px;border:1px solid #294766;background:#14243a;color:var(--cyan)
 }
-
-.mic{
- background:#102b40;
- border-color:#176081;
-}
-
-.send{
- background:linear-gradient(135deg,#00cfff,#387cff);
- color:#061522;
- border:0;
-}
-
-.stop{
- color:#ff7777;
- background:#291c2a;
- border-color:#58303b;
-}
-
-.tools{
- display:flex;
- justify-content:center;
- gap:10px;
- margin:9px auto 0;
-}
-
+.mic{background:#102b40;border-color:#176081}
+.send{background:linear-gradient(135deg,#00cfff,#387cff);color:#061522;border:0}
+.stop{color:#ff7777;background:#291c2a;border-color:#58303b}
+.tools{display:flex;justify-content:center;gap:10px;margin:9px auto 0}
 .tools button{
- width:43px;
- height:36px;
- display:flex;
- align-items:center;
- justify-content:center;
- border-radius:10px;
- border:1px solid #294766;
- background:#14243a;
- color:var(--cyan);
+ width:43px;height:36px;display:flex;align-items:center;justify-content:center;
+ border-radius:10px;border:1px solid #294766;background:#14243a;color:var(--cyan)
 }
-
-.tools .stop{
- color:#ff7777;
- background:#291c2a;
-}
-
-button:disabled{
- opacity:.5;
- cursor:not-allowed;
-}
-
+.tools .stop{color:#ff7777;background:#291c2a}
+button:disabled{opacity:.5;cursor:not-allowed}
 svg{display:block}
-
 @media(max-width:480px){
  main{padding:10px;padding-bottom:165px}
- .hero h2{font-size:20px}
- #chat{height:290px}
+ .hero h2{font-size:20px}#chat{height:290px}
  input{padding:12px;font-size:13px}
- .input-area{gap:5px}
- .icon-btn{width:42px;height:42px}
+ .input-area{gap:5px}.icon-btn{width:42px;height:42px}
 }
 </style>
 </head>
 
 <body>
-
 <header>
  <div class="logo">ARYA AI</div>
  <div class="online">● SYSTEM ONLINE</div>
 </header>
 
 <main>
-
 <section class="hero" id="hero">
-
  <h2>YOUR PERSONAL AI</h2>
  <p>Intelligent Voice & Chat Assistant</p>
-
- <div class="core">
-  <span>ARYA</span>
- </div>
-
+ <div class="core"><span>ARYA</span></div>
  <div class="wave">
   <i></i><i></i><i></i><i></i><i></i>
   <i></i><i></i><i></i><i></i><i></i>
   <i></i><i></i><i></i><i></i><i></i>
  </div>
-
  <div id="status">SYSTEM READY</div>
-
 </section>
 
 <section class="chatbox">
-
  <div class="chat-header">
   <div class="chat-title">AI CONVERSATION</div>
-
   <div class="chat-actions">
-
-   <button class="small-btn" onclick="newChat()"
-   aria-label="New Chat" title="New Chat">
-    <svg width="17" height="17" viewBox="0 0 24 24"
-    fill="none" stroke="currentColor" stroke-width="1.8">
+   <button class="small-btn" onclick="newChat()" aria-label="New Chat" title="New Chat">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
      <path d="M12 5v14M5 12h14"/>
     </svg>
    </button>
-
-   <button class="small-btn" onclick="clearChat()"
-   aria-label="Clear Chat" title="Clear Chat">
-    <svg width="17" height="17" viewBox="0 0 24 24"
-    fill="none" stroke="currentColor" stroke-width="1.8">
+   <button class="small-btn" onclick="clearChat()" aria-label="Clear Chat" title="Clear Chat">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
      <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
     </svg>
    </button>
-
   </div>
  </div>
 
@@ -414,83 +158,50 @@ svg{display:block}
    बताइए, मैं आपकी क्या मदद कर सकती हूँ?
   </div>
  </div>
-
 </section>
-
 </main>
 
 <footer>
-
  <div class="input-area">
+  <input id="message" placeholder="ARYA से कुछ पूछें..." autocomplete="off">
 
-  <input id="message"
-  placeholder="ARYA से कुछ पूछें..."
-  autocomplete="off">
-
-  <button class="icon-btn mic"
-  onclick="startListening()" aria-label="Microphone">
-
-   <svg width="21" height="21" viewBox="0 0 24 24"
-   fill="none" stroke="currentColor" stroke-width="1.8"
-   stroke-linecap="round" stroke-linejoin="round">
+  <button class="icon-btn mic" onclick="startListening()" aria-label="Microphone" title="Speak">
+   <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <rect x="9" y="2" width="6" height="13" rx="3"/>
     <path d="M5 10a7 7 0 0 0 14 0M12 17v5M9 22h6"/>
    </svg>
-
   </button>
 
-  <button class="icon-btn send"
-  onclick="sendMessage()" aria-label="Send">
-
-   <svg width="21" height="21" viewBox="0 0 24 24"
-   fill="none" stroke="currentColor" stroke-width="1.8"
-   stroke-linecap="round" stroke-linejoin="round">
-    <path d="M22 2 11 13"/>
-    <path d="m22 2-7 20-4-9-9-4z"/>
+  <button class="icon-btn send" onclick="sendMessage()" aria-label="Send" title="Send">
+   <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/>
    </svg>
-
   </button>
-
  </div>
 
  <div class="tools">
-
-  <button onclick="toggleVoice()" id="voiceBtn"
-  aria-label="Voice On Off" title="Voice On/Off">
-
-   <svg id="voiceIcon" width="19" height="19"
-   viewBox="0 0 24 24" fill="none"
-   stroke="currentColor" stroke-width="1.8"
-   stroke-linecap="round" stroke-linejoin="round">
-    <path d="M11 5 6 9H2v6h4l5 4z"/>
-    <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
-    <path d="M19 5a10 10 0 0 1 0 14"/>
+  <button onclick="toggleVoice()" id="voiceBtn" aria-label="Voice On Off" title="Voice On/Off">
+   <svg id="voiceIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>
    </svg>
-
   </button>
 
-  <button class="stop" onclick="stopSpeaking()"
-  aria-label="Stop Voice" title="Stop">
-
-   <svg width="17" height="17" viewBox="0 0 24 24"
-   fill="currentColor">
+  <button class="stop" onclick="stopSpeaking()" aria-label="Stop Voice" title="Stop">
+   <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
     <rect x="6" y="6" width="12" height="12" rx="2"/>
    </svg>
-
   </button>
-
  </div>
-
 </footer>
 
 <script>
-
 const API_URL="https://arya-backend-2.onrender.com/chat";
 
 let voiceEnabled=true;
 let recognition=null;
 let isListening=false;
 let chatHistory=[];
+let preferredLanguage="hi-IN";
 
 const chat=document.getElementById("chat");
 const input=document.getElementById("message");
@@ -501,7 +212,6 @@ function setStatus(text){
 }
 
 function addMessage(text,type){
-
  const div=document.createElement("div");
  div.className="message "+type;
  div.textContent=text;
@@ -509,91 +219,110 @@ function addMessage(text,type){
  const time=document.createElement("span");
  time.className="time";
  time.textContent=new Date().toLocaleTimeString([],{
-  hour:"2-digit",
-  minute:"2-digit"
+  hour:"2-digit",minute:"2-digit"
  });
-
  div.appendChild(time);
  chat.appendChild(div);
  chat.scrollTop=chat.scrollHeight;
-
  return div;
 }
 
-function speak(text){
+// Detect language of typed or recognized text
+function detectLanguage(text){
+ if(/[\u0900-\u097F]/.test(text)) return "hi-IN";
 
- if(!voiceEnabled || !window.speechSynthesis)return;
+ // Latin script is treated as English/Hinglish
+ return "en-IN";
+}
+
+// Load voices and prefer natural female voices where available
+function getVoiceForLanguage(language){
+ const voices=window.speechSynthesis?.getVoices()||[];
+ const langPrefix=language==="hi-IN"?"hi":"en";
+
+ const matching=voices.filter(v=>
+  v.lang.toLowerCase().startsWith(langPrefix)
+ );
+
+ const femalePreferred=[
+  "female","zira","samantha","susan","aria","jenny",
+  "natasha","heera","priya","neerja","google"
+ ];
+
+ for(const keyword of femalePreferred){
+  const found=matching.find(v=>v.name.toLowerCase().includes(keyword));
+  if(found)return found;
+ }
+
+ return matching[0]||voices.find(v=>
+  v.lang.toLowerCase().startsWith(langPrefix)
+ )||null;
+}
+
+function speak(text){
+ if(!voiceEnabled||!window.speechSynthesis)return;
 
  speechSynthesis.cancel();
 
+ const language=detectLanguage(text);
  const speech=new SpeechSynthesisUtterance(text);
 
- speech.lang=/[\u0900-\u097F]/.test(text)
- ? "hi-IN":"en-US";
-
- speech.rate=0.92;
- speech.pitch=1.05;
+ speech.lang=language;
+ speech.rate=0.94;
+ speech.pitch=1.08;
  speech.volume=1;
 
- const voices=speechSynthesis.getVoices();
-
- const selected=voices.find(v=>
- /female|zira|samantha|susan/i.test(v.name)
- );
-
- if(selected) speech.voice=selected;
+ const voice=getVoiceForLanguage(language);
+ if(voice){
+  speech.voice=voice;
+  speech.lang=voice.lang;
+ }
 
  speech.onstart=()=>{
   hero.classList.add("speaking");
   setStatus("ARYA SPEAKING");
  };
-
  speech.onend=()=>{
   hero.classList.remove("speaking");
   setStatus("SYSTEM READY");
  };
-
  speech.onerror=()=>{
   hero.classList.remove("speaking");
+  setStatus("VOICE ERROR");
  };
 
  speechSynthesis.speak(speech);
 }
 
 function stopSpeaking(){
-
- if(window.speechSynthesis){
-  speechSynthesis.cancel();
- }
-
+ if(window.speechSynthesis)speechSynthesis.cancel();
  hero.classList.remove("speaking");
  setStatus("VOICE STOPPED");
 }
 
 function toggleVoice(){
-
  voiceEnabled=!voiceEnabled;
 
  if(!voiceEnabled){
   stopSpeaking();
   document.getElementById("voiceIcon").innerHTML=
-  '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="m17 9 5 6m0-6-5 6"/>';
+   '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="m17 9 5 6m0-6-5 6"/>';
   setStatus("VOICE OFF");
  }else{
   document.getElementById("voiceIcon").innerHTML=
-  '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>';
+   '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>';
   setStatus("VOICE ON");
  }
 }
 
+// Mic uses the last detected language.
+// It starts in Hindi by default, and switches after English/Hindi is detected.
 function startListening(){
-
- const SpeechRecognition=
- window.SpeechRecognition ||
- window.webkitSpeechRecognition;
+ const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 
  if(!SpeechRecognition){
   setStatus("VOICE INPUT NOT SUPPORTED");
+  addMessage("इस ब्राउज़र में Voice Recognition उपलब्ध नहीं है। Chrome में खोलकर कोशिश करें।","bot");
   return;
  }
 
@@ -603,18 +332,24 @@ function startListening(){
  }
 
  recognition=new SpeechRecognition();
- recognition.lang="hi-IN";
+ recognition.lang=preferredLanguage;
  recognition.continuous=false;
  recognition.interimResults=false;
+ recognition.maxAlternatives=3;
 
  recognition.onstart=()=>{
   isListening=true;
   hero.classList.add("listening");
-  setStatus("ARYA LISTENING");
+  setStatus("LISTENING • "+(preferredLanguage==="hi-IN"?"HINDI":"ENGLISH"));
  };
 
  recognition.onresult=(event)=>{
-  input.value=event.results[0][0].transcript;
+  const transcript=event.results[0][0].transcript.trim();
+  if(!transcript)return;
+
+  const detected=detectLanguage(transcript);
+  preferredLanguage=detected;
+  input.value=transcript;
   sendMessage();
  };
 
@@ -635,22 +370,17 @@ function startListening(){
 }
 
 async function sendMessage(){
-
  const message=input.value.trim();
-
  if(!message)return;
 
- stopSpeaking();
+ // Use language of latest user message for the next mic session
+ preferredLanguage=detectLanguage(message);
 
+ stopSpeaking();
  addMessage(message,"user");
 
- chatHistory.push({
-  role:"user",
-  content:message
- });
-
+ chatHistory.push({role:"user",content:message});
  input.value="";
-
  setStatus("ARYA THINKING");
 
  const loading=document.createElement("div");
@@ -659,53 +389,36 @@ async function sendMessage(){
  chat.appendChild(loading);
 
  try{
-
   const response=await fetch(API_URL,{
    method:"POST",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    message:message
-   })
+   body:JSON.stringify({message:message})
   });
 
   const data=await response.json();
 
-  if(!response.ok){
-   throw new Error(data.reply||"Server error");
-  }
+  if(!response.ok)throw new Error(data.reply||"Server error");
 
   const answer=data.reply||"जवाब नहीं मिला।";
-
   loading.remove();
-
   addMessage(answer,"bot");
 
-  chatHistory.push({
-   role:"assistant",
-   content:answer
-  });
-
+  chatHistory.push({role:"assistant",content:answer});
   setStatus("SYSTEM ONLINE");
-
   speak(answer);
 
  }catch(error){
-
   loading.remove();
-
   addMessage(
    "माफ कीजिए, अभी जवाब नहीं मिल पाया। कृपया थोड़ी देर बाद कोशिश करें।",
    "bot"
   );
-
   setStatus("CONNECTION ERROR");
-
   console.error(error);
  }
 }
 
 function clearChat(){
-
  if(!confirm("क्या आप पूरी चैट साफ करना चाहते हैं?"))return;
 
  chat.innerHTML="";
@@ -720,17 +433,16 @@ function newChat(){
 }
 
 input.addEventListener("keydown",function(event){
- if(event.key==="Enter"){
-  sendMessage();
- }
+ if(event.key==="Enter")sendMessage();
 });
 
+// Refresh voices when Android/Chrome loads them asynchronously
 if(window.speechSynthesis){
+ speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
  speechSynthesis.getVoices();
 }
-
 </script>
-
 </body>
- </html>
+    </html>
+   
  
