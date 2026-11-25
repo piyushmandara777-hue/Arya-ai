@@ -263,11 +263,24 @@ footer{
 <script>
 const API_URL = "https://arya-backend-2.onrender.com/chat";
 
+const HISTORY_KEY = "arya_chat_history_v1";
+const MEMORY_KEY = "arya_memory_v1";
+
 let voiceEnabled = true;
 let currentLanguage = "hi-IN";
 let recognition = null;
 let isListening = false;
 let isSending = false;
+
+let conversationHistory = [];
+try {
+ conversationHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+ if(!Array.isArray(conversationHistory)) conversationHistory = [];
+} catch(e) {
+ conversationHistory = [];
+}
+
+let memory = localStorage.getItem(MEMORY_KEY) || "";
 
 const chat = document.getElementById("chat");
 const mainArea = document.getElementById("mainArea");
@@ -277,14 +290,11 @@ const languageBtn = document.getElementById("languageBtn");
 const languageStatus = document.getElementById("languageStatus");
 const voiceBtn = document.getElementById("voiceBtn");
 
-/* HI / EN language switch */
 function toggleLanguage(){
  if(isListening && recognition){
   try{recognition.stop()}catch(e){}
  }
- currentLanguage =
-  currentLanguage === "hi-IN" ? "en-IN" : "hi-IN";
-
+ currentLanguage = currentLanguage === "hi-IN" ? "en-IN" : "hi-IN";
  updateLanguageUI();
 }
 
@@ -298,8 +308,7 @@ function updateLanguageUI(){
  }
 }
 
-/* Add messages to chat */
-function addMessage(text, type){
+function addMessage(text,type){
  const welcome = document.getElementById("welcome");
  if(welcome) welcome.remove();
 
@@ -329,55 +338,105 @@ function showTyping(){
  return bubble;
 }
 
-/* Speech output */
 function speak(text){
  if(!voiceEnabled || !("speechSynthesis" in window)) return;
 
  window.speechSynthesis.cancel();
-
  const speech = new SpeechSynthesisUtterance(text);
-
- // Reply language based on the reply text
  speech.lang = /[\u0900-\u097F]/.test(text) ? "hi-IN" : "en-IN";
  speech.rate = 0.94;
  speech.pitch = 1.05;
 
  const voices = window.speechSynthesis.getVoices();
  const matching = voices.filter(v =>
-  v.lang && v.lang.toLowerCase().startsWith(
-   speech.lang.toLowerCase().slice(0,2)
-  )
+  v.lang && v.lang.toLowerCase().startsWith(speech.lang.slice(0,2))
  );
 
- if(matching.length){
-  speech.voice = matching[0];
- }
-
+ if(matching.length) speech.voice = matching[0];
  window.speechSynthesis.speak(speech);
 }
 
-/* Voice ON / OFF */
 function toggleVoice(){
  voiceEnabled = !voiceEnabled;
-
  const span = voiceBtn.querySelector("span");
- span.textContent = voiceEnabled ? "Voice ON" : "Voice OFF";
-
- voiceBtn.classList.toggle("active", voiceEnabled);
-
- if(!voiceEnabled){
-  stopSpeaking();
- }
+ if(span) span.textContent = voiceEnabled ? "Voice ON" : "Voice OFF";
+ voiceBtn.classList.toggle("active",voiceEnabled);
+ if(!voiceEnabled) stopSpeaking();
 }
 
-/* Stop speech */
 function stopSpeaking(){
- if("speechSynthesis" in window){
-  window.speechSynthesis.cancel();
+ if("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+function saveHistory(){
+ localStorage.setItem(HISTORY_KEY,JSON.stringify(conversationHistory.slice(-30)));
+}
+
+function manageMemory(){
+ const choice = prompt("ARYA MEMORY\n\n1 = Memory देखें\n2 = Memory बदलें\n3 = Memory मिटाएँ");
+
+ if(choice === "1"){
+  alert(memory || "अभी कोई Memory सेव नहीं है।");
+ }
+
+ if(choice === "2"){
+  const updated = prompt("ARYA को क्या याद रखना चाहिए?",memory);
+  if(updated !== null){
+   memory = updated.slice(0,4000);
+   localStorage.setItem(MEMORY_KEY,memory);
+   alert("Memory सेव हो गई।");
+  }
+ }
+
+ if(choice === "3" && confirm("क्या Memory मिटानी है?")){
+  memory = "";
+  localStorage.removeItem(MEMORY_KEY);
+  alert("Memory मिटा दी गई।");
  }
 }
 
-/* Send chat */
+function addMemoryButton(){
+ const group = document.querySelector(".tools .tool-group");
+ if(!group || document.getElementById("memoryBtn")) return;
+
+ const button = document.createElement("button");
+ button.id = "memoryBtn";
+ button.type = "button";
+ button.textContent = "Memory";
+ button.addEventListener("click",manageMemory);
+ group.appendChild(button);
+}
+
+function showSources(parent,sources){
+ if(!Array.isArray(sources) || !sources.length) return;
+
+ const box = document.createElement("div");
+ box.style.marginTop = "8px";
+ box.style.fontSize = "13px";
+ box.textContent = "Sources:";
+
+ sources.forEach(source=>{
+  if(!source.url) return;
+  try{
+   const url = new URL(source.url);
+   if(!["https:","http:"].includes(url.protocol)) return;
+
+   const link = document.createElement("a");
+   link.href = url.href;
+   link.textContent = source.title || url.hostname;
+   link.target = "_blank";
+   link.rel = "noopener noreferrer";
+   link.style.display = "block";
+   link.style.color = "#54d6ff";
+   box.appendChild(link);
+  }catch(e){}
+ });
+
+ parent.appendChild(box);
+}
+</script>
+
+/* Send message */
 async function sendMessage(textFromMic){
  if(isSending) return;
 
@@ -386,38 +445,45 @@ async function sendMessage(textFromMic){
 
  messageInput.value = "";
  messageInput.style.height = "42px";
-
- addMessage(text, "user");
+ addMessage(text,"user");
  isSending = true;
 
  const typingBubble = showTyping();
+ const previousHistory = conversationHistory.slice(-12);
 
  try{
   const response = await fetch(API_URL,{
    method:"POST",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({message:text})
+   body:JSON.stringify({
+    message:text,
+    history:previousHistory,
+    memory:memory
+   })
   });
 
   const data = await response.json();
+  if(!response.ok) throw new Error(data.error || "Server error");
 
-  if(!response.ok){
-   throw new Error(data.error || "Server error");
-  }
-
-  const answer =
-   data.reply || data.response || data.message ||
-   "मुझे जवाब नहीं मिला।";
+  const answer = data.reply || data.response || data.message || "मुझे जवाब नहीं मिला।";
 
   typingBubble.classList.remove("typing");
   typingBubble.textContent = answer;
+  showSources(typingBubble.parentElement,data.sources);
+
+  conversationHistory.push(
+   {role:"user",text:text},
+   {role:"model",text:answer}
+  );
+
+  conversationHistory = conversationHistory.slice(-30);
+  saveHistory();
 
   if(voiceEnabled) speak(answer);
 
  }catch(error){
   typingBubble.classList.remove("typing");
-  typingBubble.textContent =
-   "माफ़ कीजिए, अभी जवाब नहीं मिल पाया। इंटरनेट या सर्वर की समस्या हो सकती है।";
+  typingBubble.textContent = "माफ़ कीजिए, अभी जवाब नहीं मिल पाया। इंटरनेट या सर्वर की समस्या हो सकती है।";
   console.error(error);
  }finally{
   isSending = false;
@@ -425,21 +491,17 @@ async function sendMessage(textFromMic){
  }
 }
 
-/* Mic language selection */
+/* Microphone */
 function startListening(){
  if(isListening){
   try{recognition.stop()}catch(e){}
   return;
  }
 
- const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
+ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
  if(!SpeechRecognition){
-  addMessage(
-   "इस ब्राउज़र में Voice Recognition उपलब्ध नहीं है। Chrome में खोलकर कोशिश करें।",
-   "bot"
-  );
+  addMessage("इस ब्राउज़र में Voice Recognition उपलब्ध नहीं है। Chrome में कोशिश करें।","bot");
   return;
  }
 
@@ -462,9 +524,8 @@ function startListening(){
 
  recognition.onerror = function(event){
   console.log("Mic error:",event.error);
-
   if(event.error !== "no-speech" && event.error !== "aborted"){
-   addMessage("आवाज़ पहचानने में समस्या हुई। भाषा HI/EN चुनकर फिर कोशिश करें।","bot");
+   addMessage("आवाज़ पहचानने में समस्या हुई। HI/EN चुनकर फिर कोशिश करें।","bot");
   }
  };
 
@@ -481,15 +542,19 @@ function startListening(){
  }
 }
 
-/* Clear current chat */
+/* Clear chat */
 function clearChat(){
  chat.innerHTML = "";
+ conversationHistory = [];
+ saveHistory();
  addMessage("चैट साफ़ कर दी गई है। बताइए, मैं आपकी क्या मदद कर सकता हूँ?","bot");
 }
 
 /* New chat */
 function newChat(){
  chat.innerHTML = "";
+ conversationHistory = [];
+ saveHistory();
 
  const welcome = document.createElement("div");
  welcome.className = "welcome";
@@ -506,7 +571,15 @@ function newChat(){
  stopSpeaking();
 }
 
-/* Enter to send, Shift+Enter for new line */
+/* Restore saved chat */
+function loadHistory(){
+ conversationHistory.slice(-30).forEach(item=>{
+  if(item.role === "user") addMessage(item.text,"user");
+  else if(item.role === "model") addMessage(item.text,"bot");
+ });
+}
+
+/* Enter to send */
 messageInput.addEventListener("keydown",function(e){
  if(e.key === "Enter" && !e.shiftKey){
   e.preventDefault();
@@ -514,15 +587,19 @@ messageInput.addEventListener("keydown",function(e){
  }
 });
 
-/* Auto resize text area */
+/* Text area resize */
 messageInput.addEventListener("input",function(){
  this.style.height = "42px";
  this.style.height = Math.min(this.scrollHeight,120)+"px";
 });
 
+/* Start */
 updateLanguageUI();
+addMemoryButton();
+loadHistory();
 </script>
 
+ 
 </body>
                              </html>
                           
