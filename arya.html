@@ -394,7 +394,11 @@ let recognition=null;
 let listening=false;
 let speaking=false;
 let activeSessionId=Date.now().toString();
-
+let mediaRecorder=null;
+let audioChunks=[];
+let recordingStream=null;
+let cancelRecording=false;
+ 
 const $=id=>document.getElementById(id);
 
 function escapeHTML(text){
