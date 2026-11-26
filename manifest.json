@@ -1,14 +1,26 @@
-
 {
-  "background_color": "#080f1e",
-  "dir": "ltr",
+  "id": "/Arya-ai/",
+  "name": "ARYA AI",
+  "short_name": "ARYA",
+  "description": "ARYA AI - Your Personal AI Assistant",
+  "start_url": "/Arya-ai/",
+  "scope": "/Arya-ai/",
   "display": "standalone",
-  "name": "Arya AI",
   "orientation": "any",
-  "scope": "/",
-  "short_name": "Arya",
-  "start_url": "/",
+  "background_color": "#080f1e",
   "theme_color": "#080f1e",
-  "id": "com.aryaai.assistant",
-  "description": "ARYA AI - Your Personal AI Assistant"
+  "icons": [
+    {
+      "src": "/Arya-ai/icons/arya-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Arya-ai/icons/arya-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
