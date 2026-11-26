@@ -765,7 +765,15 @@ messageInput.addEventListener("input",function(){
 updateLanguageUI();
 loadHistory();
 </script>
-
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then(() => console.log("ARYA PWA Ready"))
+      .catch(error => console.log("PWA Error:", error));
+  });
+}
+</script>
 </body>
 </html>
 
