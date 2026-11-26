@@ -736,55 +736,150 @@ $("message").addEventListener("keydown",e=>{
  }
 });
 
-function startListening(){
- const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SpeechRecognition){
-  $("voiceHint").textContent="इस Browser में Voice Recognition उपलब्ध नहीं है। Chrome में कोशिश करें।";
+async function startListening(){
+ if(listening){
+  stopListening(false);
   return;
  }
- if(listening)return;
+
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+  $("voiceHint").textContent="इस Browser में Mic रिकॉर्डिंग उपलब्ध नहीं है।";
+  return;
+ }
+
+ if(!window.MediaRecorder){
+  $("voiceHint").textContent="Audio Recorder उपलब्ध नहीं है।";
+  return;
+ }
+
  stopSpeaking();
- recognition=new SpeechRecognition();
- recognition.lang="hi-IN";
- recognition.continuous=false;
- recognition.interimResults=true;
- listening=true;
- document.body.classList.add("listening");
- $("micBtn").textContent="Listening...";
- $("voiceHint").textContent="मैं सुन रही हूँ...";
- let finalText="";
- recognition.onresult=e=>{
-  let interim="";
-  for(let i=e.resultIndex;i<e.results.length;i++){
-   const part=e.results[i][0].transcript;
-   if(e.results[i].isFinal)finalText+=part;
-   else interim+=part;
+
+ try{
+  recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  audioChunks=[];
+  cancelRecording=false;
+
+  let mimeType="";
+  if(MediaRecorder.isTypeSupported("audio/webm;codecs=opus")){
+   mimeType="audio/webm;codecs=opus";
+  }else if(MediaRecorder.isTypeSupported("audio/webm")){
+   mimeType="audio/webm";
   }
-  $("voiceTranscript").textContent=finalText+interim;
- };
- recognition.onerror=e=>{
-  $("voiceHint").textContent="आवाज़ पहचानने में समस्या: "+e.error;
- };
- recognition.onend=()=>{
+
+  mediaRecorder=mimeType
+   ?new MediaRecorder(recordingStream,{mimeType})
+   :new MediaRecorder(recordingStream);
+
+  mediaRecorder.ondataavailable=e=>{
+   if(e.data&&e.data.size>0){
+    audioChunks.push(e.data);
+   }
+  };
+
+  mediaRecorder.onstop=async()=>{
+   const cancelled=cancelRecording;
+
+   if(recordingStream){
+    recordingStream.getTracks().forEach(track=>track.stop());
+    recordingStream=null;
+   }
+
+   listening=false;
+   document.body.classList.remove("listening");
+   $("micBtn").textContent="Mic";
+
+   if(cancelled){
+    audioChunks=[];
+    $("voiceHint").textContent="Recording रोक दी गई।";
+    return;
+   }
+
+   const audioBlob=new Blob(audioChunks,{
+    type:mediaRecorder.mimeType||"audio/webm"
+   });
+
+   audioChunks=[];
+
+   if(!audioBlob.size){
+    $("voiceHint").textContent="आवाज़ रिकॉर्ड नहीं हुई। फिर कोशिश करें।";
+    return;
+   }
+
+   $("voiceHint").textContent="आवाज़ समझ रही हूँ...";
+
+   try{
+    const formData=new FormData();
+    formData.append("audio",audioBlob,"arya-audio.webm");
+
+    const response=await fetch(
+     "https://arya-backend-2.onrender.com/transcribe",
+     {
+      method:"POST",
+      body:formData
+     }
+    );
+
+    const result=await response.json();
+
+    if(!response.ok){
+     throw new Error(result.error||"Transcription failed");
+    }
+
+    const text=(result.text||"").trim();
+
+    if(!text){
+     $("voiceHint").textContent="आवाज़ समझ नहीं आई। फिर से बोलें।";
+     return;
+    }
+
+    $("voiceTranscript").textContent=text;
+    $("voiceHint").textContent="आपने कहा: "+text;
+
+    if(currentMode==="voice"){
+     sendToARYA(text,true);
+    }
+
+   }catch(error){
+    console.error("Transcription error:",error);
+    $("voiceHint").textContent="आवाज़ समझने में समस्या हुई।";
+   }
+  };
+
+  mediaRecorder.start();
+
+  listening=true;
+  document.body.classList.add("listening");
+  $("micBtn").textContent="Stop Recording";
+  $("voiceHint").textContent="मैं सुन रही हूँ... बोलिए।";
+
+ }catch(error){
+  console.error("Microphone error:",error);
+
   listening=false;
   document.body.classList.remove("listening");
   $("micBtn").textContent="Mic";
-  const text=finalText.trim();
-  if(text&&currentMode==="voice")sendToARYA(text,true);
-  else if(!text)$("voiceHint").textContent="फिर से बोलने के लिए Mic दबाएँ";
- };
- try{recognition.start();}
- catch(e){listening=false;document.body.classList.remove("listening");}
+
+  $("voiceHint").textContent=
+   "Mic अनुमति नहीं मिली। Browser Settings में Microphone Allow करें।";
+ }
 }
 
-function stopListening(){
- if(recognition){
-  try{recognition.stop();}catch{}
+function stopListening(cancel=false){
+ cancelRecording=cancel;
+
+ if(mediaRecorder&&mediaRecorder.state!=="inactive"){
+  mediaRecorder.stop();
  }
- listening=false;
- document.body.classList.remove("listening");
- $("micBtn").textContent="Mic";
-}
+
+ if(cancel){
+  listening=false;
+  document.body.classList.remove("listening");
+  $("micBtn").textContent="Mic";
+ }
+ }
+
+
+
 
 function speak(text){
  if(!("speechSynthesis" in window))return;
@@ -827,9 +922,8 @@ function toggleVoice(){
  $("voiceToggleBtn").textContent=voiceEnabled?"Voice ON":"Voice OFF";
  if(!voiceEnabled)stopSpeaking();
 }
-
 function stopAll(){
- stopListening();
+ stopListening(true);
  stopSpeaking();
  $("voiceHint").textContent="रोक दिया गया। फिर से शुरू करने के लिए Mic दबाएँ।";
  $("status").textContent="Voice रुक गया";
