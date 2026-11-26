@@ -709,7 +709,7 @@ async function sendToARYA(message,fromVoice){
   }
   saveMessage("assistant",reply);
   $("status").textContent="ARYA ऑनलाइन है";
-  if(fromVoice&&voiceEnabled)speak(reply);
+  if(fromVoice)speak(reply);
  }catch(error){
   loading.textContent="माफ़ कीजिए, अभी जवाब नहीं मिल पाया। कृपया थोड़ी देर बाद कोशिश करें।";
   $("status").textContent="कनेक्शन में समस्या";
