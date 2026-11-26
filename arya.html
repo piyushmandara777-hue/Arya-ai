@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -322,7 +321,6 @@ body.speaking .core{
 
 <div id="status">ARYA तैयार है</div>
 
-<!-- CHAT MODE -->
 <section id="chatMode">
  <div id="chat">
   <div class="message bot">
@@ -335,7 +333,6 @@ body.speaking .core{
  </div>
 </section>
 
-<!-- VOICE MODE -->
 <section id="voiceMode">
  <div class="core-area">
   <div class="ring three"></div>
@@ -356,7 +353,6 @@ body.speaking .core{
  </div>
 </section>
 
-<!-- HISTORY DRAWER -->
 <div id="historyPanel" onclick="if(event.target===this)closeHistory()">
  <div class="drawer">
   <div class="drawer-head">
@@ -369,7 +365,6 @@ body.speaking .core{
  </div>
 </div>
 
-<!-- MEMORY MODAL -->
 <div id="memoryPanel">
  <div class="modal">
   <h3>ARYA Memory</h3>
@@ -394,11 +389,7 @@ let recognition=null;
 let listening=false;
 let speaking=false;
 let activeSessionId=Date.now().toString();
-let mediaRecorder=null;
-let audioChunks=[];
-let recordingStream=null;
-let cancelRecording=false;
- 
+
 const $=id=>document.getElementById(id);
 
 function escapeHTML(text){
@@ -411,26 +402,32 @@ function escapeHTML(text){
 function formatInline(text){
  let safe=escapeHTML(text);
  const codes=[];
+
  safe=safe.replace(/`([^`]+)`/g,(m,c)=>{
   const k="CODETOKEN"+codes.length;
   codes.push("<code>"+c+"</code>");
   return k;
  });
+
  safe=safe.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
  safe=safe.replace(/__(.+?)__/g,"<strong>$1</strong>");
  safe=safe.replace(/\*(.+?)\*/g,"<em>$1</em>");
  safe=safe.replace(/_(.+?)_/g,"<em>$1</em>");
+
  safe=safe.replace(/(https?:\/\/[^\s<]+)/g,url=>{
   let clean=url,tail="";
   while(/[.,!?;:)]+$/.test(clean)){
-   tail=clean.slice(-1)+tail;clean=clean.slice(0,-1);
+   tail=clean.slice(-1)+tail;
+   clean=clean.slice(0,-1);
   }
   try{
    const u=new URL(clean);
    if(!["http:","https:"].includes(u.protocol))return url;
   }catch{return url;}
+
   return '<a href="'+clean+'" target="_blank" rel="noopener noreferrer">'+clean+'</a>'+tail;
  });
+
  codes.forEach((c,i)=>safe=safe.replace("CODETOKEN"+i,c));
  return safe;
 }
@@ -438,15 +435,21 @@ function formatInline(text){
 function markdownToHTML(text){
  const lines=String(text||"").replace(/\r/g,"").split("\n");
  let html="",paragraph=[],list=null,code=false,codeLines=[];
+
  function closeP(){
   if(paragraph.length){
    html+="<p>"+paragraph.map(formatInline).join("<br>")+"</p>";
    paragraph=[];
   }
  }
- function closeL(){if(list){html+="</"+list+">";list=null;}}
+
+ function closeL(){
+  if(list){html+="</"+list+">";list=null;}
+ }
+
  for(let i=0;i<lines.length;i++){
   const t=lines[i].trim();
+
   if(t.startsWith("```")){
    closeP();closeL();
    if(code){
@@ -455,11 +458,14 @@ function markdownToHTML(text){
    }else code=true;
    continue;
   }
+
   if(code){codeLines.push(lines[i]);continue;}
   if(!t){closeP();closeL();continue;}
+
   if(/^(-{3,}|\*{3,}|_{3,})$/.test(t)){
    closeP();closeL();html+="<hr>";continue;
   }
+
   const h=t.match(/^(#{1,3})\s+(.+)$/);
   if(h){
    closeP();closeL();
@@ -467,13 +473,16 @@ function markdownToHTML(text){
    html+="<h"+n+">"+formatInline(h[2])+"</h"+n+">";
    continue;
   }
+
   if(t.startsWith(">")){
    closeP();closeL();
    html+="<blockquote>"+formatInline(t.replace(/^>\s?/,""))+"</blockquote>";
    continue;
   }
+
   const b=t.match(/^[-*•]\s+(.+)$/);
   const n=t.match(/^\d+[.)]\s+(.+)$/);
+
   if(b||n){
    closeP();
    const typ=b?"ul":"ol";
@@ -481,8 +490,10 @@ function markdownToHTML(text){
    html+="<li>"+formatInline((b||n)[1])+"</li>";
    continue;
   }
+
   closeL();paragraph.push(lines[i]);
  }
+
  if(code)html+="<pre><code>"+escapeHTML(codeLines.join("\n"))+"</code></pre>";
  closeP();closeL();
  return html;
@@ -491,31 +502,40 @@ function markdownToHTML(text){
 function addMessage(text,type,sources=[]){
  const div=document.createElement("div");
  div.className="message "+type;
- if(type==="user")div.textContent=text;
- else{
+
+ if(type==="user"){
+  div.textContent=text;
+ }else{
   div.innerHTML=markdownToHTML(text);
+
   if(Array.isArray(sources)&&sources.length){
    const box=document.createElement("div");
    box.className="sources";
    const title=document.createElement("strong");
    title.textContent="Sources";
    box.appendChild(title);
+
    sources.forEach((s,i)=>{
     const url=typeof s==="string"?s:(s.url||s.link||"");
     const name=typeof s==="string"?s:(s.title||s.name||url);
+
     try{
      const parsed=new URL(url);
      if(!["http:","https:"].includes(parsed.protocol))return;
+
      const a=document.createElement("a");
-     a.href=parsed.href;a.target="_blank";
+     a.href=parsed.href;
+     a.target="_blank";
      a.rel="noopener noreferrer";
      a.textContent=(i+1)+". "+name;
      box.appendChild(a);
     }catch{}
    });
+
    if(box.children.length>1)div.appendChild(box);
   }
  }
+
  $("chat").appendChild(div);
  $("chat").scrollTop=$("chat").scrollHeight;
  return div;
@@ -523,23 +543,30 @@ function addMessage(text,type,sources=[]){
 
 function saveCurrent(){
  if(!conversation.length)return;
+
  let all=getSavedSessions();
  const existing=all.findIndex(x=>x.id===activeSessionId);
+
  const session={
   id:activeSessionId,
   title:(conversation.find(x=>x.role==="user")||{}).text||"New Chat",
   date:new Date().toLocaleString(),
   messages:conversation
  };
+
  if(existing>=0)all[existing]=session;
  else all.unshift(session);
+
  all=all.slice(0,50);
  localStorage.setItem("arya_chat_history_v1",JSON.stringify(all));
 }
 
 function getSavedSessions(){
- try{return JSON.parse(localStorage.getItem("arya_chat_history_v1")||"[]");}
- catch{return [];}
+ try{
+  return JSON.parse(localStorage.getItem("arya_chat_history_v1")||"[]");
+ }catch{
+  return [];
+ }
 }
 
 function getMemory(){
@@ -562,6 +589,7 @@ function newChat(){
 
 function clearHistory(){
  if(!confirm("क्या आप पूरी Chat History हटाना चाहते हैं?"))return;
+
  localStorage.removeItem("arya_chat_history_v1");
  conversation=[];
  activeSessionId=Date.now().toString();
@@ -575,33 +603,49 @@ function renderHistory(){
  const list=$("historyList");
  list.innerHTML="";
  const sessions=getSavedSessions();
+
  if(!sessions.length){
   list.textContent="अभी कोई पुरानी Chat नहीं है।";
   return;
  }
+
  sessions.forEach(s=>{
   const item=document.createElement("div");
   item.className="history-item";
+
   const title=document.createElement("div");
   title.textContent=s.title||"Chat";
+
   const date=document.createElement("small");
   date.textContent=s.date||"";
+
   item.append(title,date);
   item.onclick=()=>loadSession(s.id);
   list.appendChild(item);
  });
 }
 
-function openHistory(){renderHistory();$("historyPanel").classList.add("open");}
-function closeHistory(){$("historyPanel").classList.remove("open");}
+function openHistory(){
+ renderHistory();
+ $("historyPanel").classList.add("open");
+}
+
+function closeHistory(){
+ $("historyPanel").classList.remove("open");
+}
 
 function loadSession(id){
  const session=getSavedSessions().find(x=>x.id===id);
  if(!session)return;
+
  conversation=Array.isArray(session.messages)?session.messages:[];
  activeSessionId=session.id;
  $("chat").innerHTML="";
- conversation.forEach(m=>addMessage(m.text,m.role==="user"?"user":"bot"));
+
+ conversation.forEach(m=>
+  addMessage(m.text,m.role==="user"?"user":"bot")
+ );
+
  closeHistory();
  switchMode("chat");
  $("status").textContent="पुरानी Chat खोली गई";
@@ -611,7 +655,11 @@ function openMemory(){
  $("memoryText").value=getMemory();
  $("memoryPanel").classList.add("open");
 }
-function closeMemory(){$("memoryPanel").classList.remove("open");}
+
+function closeMemory(){
+ $("memoryPanel").classList.remove("open");
+}
+
 function saveMemory(){
  localStorage.setItem("arya_memory_v1",$("memoryText").value.trim());
  closeMemory();
@@ -620,19 +668,23 @@ function saveMemory(){
 
 function switchMode(mode){
  stopListening();
+
  if(mode!=="voice")stopSpeaking();
+
  currentMode=mode;
  $("chatMode").style.display=mode==="chat"?"flex":"none";
  $("voiceMode").classList.toggle("active",mode==="voice");
  $("chatModeBtn").classList.toggle("active",mode==="chat");
  $("voiceModeBtn").classList.toggle("active",mode==="voice");
+
  if(mode==="voice"){
   $("voiceHint").textContent="Mic दबाकर ARYA से बात करें";
   $("voiceTranscript").textContent="";
  }
- $("status").textContent=mode==="voice"?"Voice Mode तैयार है":"Chat Mode तैयार है";
-}
 
+ $("status").textContent=
+  mode==="voice"?"Voice Mode तैयार है":"Chat Mode तैयार है";
+}
 
 function detectLanguage(text){
  const value=String(text||"");
@@ -643,13 +695,13 @@ function detectLanguage(text){
  if(hindi>0&&latin>0)return "Hinglish";
  if(hindi>0)return "Hindi";
  return "English";
- }
- 
+}
 
 async function askARYA(message){
  const history=conversation.slice(-12);
  const memory=getMemory();
  const lang=detectLanguage(message);
+
  const languageInstruction=
   "Reply in the same language and writing style as the user's latest message. "+
   "If Hindi, reply in Hindi. If English, reply in English. "+
@@ -666,8 +718,10 @@ async function askARYA(message){
    memory:memory
   })
  });
+
  let data={};
  try{data=await response.json();}catch{}
+
  if(!response.ok)throw new Error(data.reply||"Server error");
  return data;
 }
@@ -676,54 +730,74 @@ let requestBusy=false;
 
 async function sendMessage(){
  if(requestBusy)return;
+
  const input=$("message");
  const message=input.value.trim();
  if(!message)return;
+
  input.value="";
  await sendToARYA(message,false);
 }
 
 async function sendToARYA(message,fromVoice){
  if(requestBusy)return;
+
  requestBusy=true;
  addMessage(message,"user");
  saveMessage("user",message);
+
  $("status").textContent="ARYA सोच रही है...";
  if(fromVoice)$("voiceHint").textContent="ARYA जवाब तैयार कर रही है...";
+
  const loading=addMessage("जवाब तैयार हो रहा है...","bot");
+
  try{
   const data=await askARYA(message);
   const reply=data.reply||data.response||"जवाब नहीं मिला।";
+
   loading.innerHTML=markdownToHTML(reply);
+
   if(Array.isArray(data.sources)&&data.sources.length){
    const box=document.createElement("div");
    box.className="sources";
+
    const heading=document.createElement("strong");
    heading.textContent="Sources";
    box.appendChild(heading);
+
    data.sources.forEach((s,i)=>{
     const url=typeof s==="string"?s:(s.url||s.link||"");
     const title=typeof s==="string"?s:(s.title||s.name||url);
+
     try{
      const parsed=new URL(url);
      if(!["http:","https:"].includes(parsed.protocol))return;
+
      const a=document.createElement("a");
-     a.href=parsed.href;a.target="_blank";
+     a.href=parsed.href;
+     a.target="_blank";
      a.rel="noopener noreferrer";
      a.textContent=(i+1)+". "+title;
      box.appendChild(a);
     }catch{}
    });
+
    if(box.children.length>1)loading.appendChild(box);
   }
+
   saveMessage("assistant",reply);
   $("status").textContent="ARYA ऑनलाइन है";
+
   if(fromVoice)speak(reply);
+
  }catch(error){
-  loading.textContent="माफ़ कीजिए, अभी जवाब नहीं मिल पाया। कृपया थोड़ी देर बाद कोशिश करें।";
+  loading.textContent=
+   "माफ़ कीजिए, अभी जवाब नहीं मिल पाया। कृपया थोड़ी देर बाद कोशिश करें।";
+
   $("status").textContent="कनेक्शन में समस्या";
   $("voiceHint").textContent="कनेक्शन में समस्या। फिर कोशिश करें।";
   console.error("ARYA error:",error);
+
  }finally{
   requestBusy=false;
  }
@@ -735,197 +809,157 @@ $("message").addEventListener("keydown",e=>{
   sendMessage();
  }
 });
+function startListening(){
+ const SpeechRecognition=
+  window.SpeechRecognition||window.webkitSpeechRecognition;
 
-async function startListening(){
+ if(!SpeechRecognition){
+  $("voiceHint").textContent=
+   "इस Browser में Voice Recognition उपलब्ध नहीं है। Chrome में कोशिश करें।";
+  return;
+ }
+
  if(listening){
-  stopListening(false);
-  return;
- }
-
- if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-  $("voiceHint").textContent="इस Browser में Mic रिकॉर्डिंग उपलब्ध नहीं है।";
-  return;
- }
-
- if(!window.MediaRecorder){
-  $("voiceHint").textContent="Audio Recorder उपलब्ध नहीं है।";
+  stopListening();
   return;
  }
 
  stopSpeaking();
 
- try{
-  recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
-  audioChunks=[];
-  cancelRecording=false;
+ recognition=new SpeechRecognition();
+ recognition.lang="hi-IN";
+ recognition.continuous=false;
+ recognition.interimResults=true;
 
-  let mimeType="";
-  if(MediaRecorder.isTypeSupported("audio/webm;codecs=opus")){
-   mimeType="audio/webm;codecs=opus";
-  }else if(MediaRecorder.isTypeSupported("audio/webm")){
-   mimeType="audio/webm";
-  }
+ let finalText="";
 
-  mediaRecorder=mimeType
-   ?new MediaRecorder(recordingStream,{mimeType})
-   :new MediaRecorder(recordingStream);
-
-  mediaRecorder.ondataavailable=e=>{
-   if(e.data&&e.data.size>0){
-    audioChunks.push(e.data);
-   }
-  };
-
-  mediaRecorder.onstop=async()=>{
-   const cancelled=cancelRecording;
-
-   if(recordingStream){
-    recordingStream.getTracks().forEach(track=>track.stop());
-    recordingStream=null;
-   }
-
-   listening=false;
-   document.body.classList.remove("listening");
-   $("micBtn").textContent="Mic";
-
-   if(cancelled){
-    audioChunks=[];
-    $("voiceHint").textContent="Recording रोक दी गई।";
-    return;
-   }
-
-   const audioBlob=new Blob(audioChunks,{
-    type:mediaRecorder.mimeType||"audio/webm"
-   });
-
-   audioChunks=[];
-
-   if(!audioBlob.size){
-    $("voiceHint").textContent="आवाज़ रिकॉर्ड नहीं हुई। फिर कोशिश करें।";
-    return;
-   }
-
-   $("voiceHint").textContent="आवाज़ समझ रही हूँ...";
-
-   try{
-    const formData=new FormData();
-    formData.append("audio",audioBlob,"arya-audio.webm");
-
-    const response=await fetch(
-     "https://arya-backend-2.onrender.com/transcribe",
-     {
-      method:"POST",
-      body:formData
-     }
-    );
-
-    const result=await response.json();
-
-    if(!response.ok){
-     throw new Error(result.error||"Transcription failed");
-    }
-
-    const text=(result.text||"").trim();
-
-    if(!text){
-     $("voiceHint").textContent="आवाज़ समझ नहीं आई। फिर से बोलें।";
-     return;
-    }
-
-    $("voiceTranscript").textContent=text;
-    $("voiceHint").textContent="आपने कहा: "+text;
-
-    if(currentMode==="voice"){
-     sendToARYA(text,true);
-    }
-
-   }catch(error){
-    console.error("Transcription error:",error);
-    $("voiceHint").textContent="आवाज़ समझने में समस्या हुई।";
-   }
-  };
-
-  mediaRecorder.start();
-
+ recognition.onstart=()=>{
   listening=true;
   document.body.classList.add("listening");
-  $("micBtn").textContent="Stop Recording";
-  $("voiceHint").textContent="मैं सुन रही हूँ... बोलिए।";
+  $("micBtn").textContent="Listening...";
+  $("voiceHint").textContent="मैं सुन रही हूँ...";
+ };
 
- }catch(error){
-  console.error("Microphone error:",error);
+ recognition.onresult=e=>{
+  let interim="";
 
+  for(let i=e.resultIndex;i<e.results.length;i++){
+   const part=e.results[i][0].transcript;
+
+   if(e.results[i].isFinal){
+    finalText+=part;
+   }else{
+    interim+=part;
+   }
+  }
+
+  $("voiceTranscript").textContent=finalText+interim;
+ };
+
+ recognition.onerror=e=>{
+  $("voiceHint").textContent=
+   "आवाज़ पहचानने में समस्या: "+e.error;
+ };
+
+ recognition.onend=()=>{
   listening=false;
   document.body.classList.remove("listening");
   $("micBtn").textContent="Mic";
 
-  $("voiceHint").textContent=
-   "Mic अनुमति नहीं मिली। Browser Settings में Microphone Allow करें।";
+  const text=finalText.trim();
+
+  if(text&&currentMode==="voice"){
+   $("voiceHint").textContent="आपने कहा: "+text;
+   sendToARYA(text,true);
+  }else if(!text){
+   $("voiceHint").textContent=
+    "फिर से बोलने के लिए Mic दबाएँ।";
+  }
+ };
+
+ try{
+  recognition.start();
+ }catch(error){
+  listening=false;
+  document.body.classList.remove("listening");
+  $("micBtn").textContent="Mic";
  }
 }
 
-function stopListening(cancel=false){
- cancelRecording=cancel;
-
- if(mediaRecorder&&mediaRecorder.state!=="inactive"){
-  mediaRecorder.stop();
+function stopListening(){
+ if(recognition){
+  try{
+   recognition.stop();
+  }catch{}
  }
 
- if(cancel){
-  listening=false;
-  document.body.classList.remove("listening");
-  $("micBtn").textContent="Mic";
- }
- }
-
-
-
+ listening=false;
+ document.body.classList.remove("listening");
+ $("micBtn").textContent="Mic";
+}
 
 function speak(text){
  if(!("speechSynthesis" in window))return;
+
  stopSpeaking();
+
  const clean=String(text)
   .replace(/```[\s\S]*?```/g," code ")
   .replace(/https?:\/\/\S+/g,"")
   .replace(/[#*_>`|]/g," ")
   .replace(/\n+/g,". ");
+
  const utterance=new SpeechSynthesisUtterance(clean);
  const lang=detectLanguage(text);
+
  utterance.lang=lang==="English"?"en-IN":"hi-IN";
  utterance.rate=1;
  utterance.pitch=1;
+
  utterance.onstart=()=>{
   speaking=true;
   document.body.classList.add("speaking");
   $("voiceHint").textContent="ARYA बोल रही है...";
  };
+
  utterance.onend=()=>{
   speaking=false;
   document.body.classList.remove("speaking");
   $("voiceHint").textContent="जवाब पूरा हुआ। फिर बोल सकते हैं।";
  };
+
  utterance.onerror=()=>{
   speaking=false;
   document.body.classList.remove("speaking");
  };
+
  speechSynthesis.speak(utterance);
 }
 
 function stopSpeaking(){
- if("speechSynthesis" in window)speechSynthesis.cancel();
+ if("speechSynthesis" in window){
+  speechSynthesis.cancel();
+ }
+
  speaking=false;
  document.body.classList.remove("speaking");
 }
 
 function toggleVoice(){
  voiceEnabled=!voiceEnabled;
- $("voiceToggleBtn").textContent=voiceEnabled?"Voice ON":"Voice OFF";
+ $("voiceToggleBtn").textContent=
+  voiceEnabled?"Voice ON":"Voice OFF";
+
  if(!voiceEnabled)stopSpeaking();
 }
+
 function stopAll(){
- stopListening(true);
+ stopListening();
  stopSpeaking();
- $("voiceHint").textContent="रोक दिया गया। फिर से शुरू करने के लिए Mic दबाएँ।";
+
+ $("voiceHint").textContent=
+  "रोक दिया गया। फिर से शुरू करने के लिए Mic दबाएँ।";
+
  $("status").textContent="Voice रुक गया";
 }
 
@@ -933,11 +967,14 @@ function stopAll(){
 function restoreLastSession(){
  const sessions=getSavedSessions();
  if(!sessions.length)return;
+
  const last=sessions[0];
  if(!last||!Array.isArray(last.messages))return;
+
  conversation=last.messages;
  activeSessionId=last.id;
  $("chat").innerHTML="";
+
  conversation.forEach(m=>{
   addMessage(m.text,m.role==="user"?"user":"bot");
  });
@@ -947,6 +984,4 @@ function restoreLastSession(){
 restoreLastSession();
 </script>
 </body>
-</html>
-
-  
+</html>  
