@@ -128,15 +128,41 @@ async function sendMessage(){
 }
 
 function addMessage(text,type){
- const chat=document.getElementById("chat");
- const div=document.createElement("div");
- div.className="message "+type;
- div.textContent=text;
- chat.appendChild(div);
- chat.scrollTop=chat.scrollHeight;
- return div;
-}
+  const chat=document.getElementById("chat");
+  const div=document.createElement("div");
+  div.className="message "+type;
 
+  let safe = String(text)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+  safe = safe.replace(/^\s*\|?[-:\s|]+\|?\s*$/gm,"");
+
+  safe = safe.replace(/^\|(.+)\|$/gm,(match,row)=>{
+    return "• "+row.split("|").map(x=>x.trim()).filter(Boolean).join(" — ");
+  });
+
+   safe = safe.replace(/&lt;(https?:\/\/[^&]+)&gt;/g,"$1");
+
+safe = safe.replace(
+  /https?:\/\/[^\s<>"']+/g,
+  url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
+);
+  safe = safe.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
+  safe = safe.replace(/^### (.*)$/gm,"<strong>$1</strong>");
+  safe = safe.replace(/^## (.*)$/gm,"<strong>$1</strong>");
+  safe = safe.replace(/^# (.*)$/gm,"<strong>$1</strong>");
+  
+
+  div.innerHTML=safe.replace(/\n/g,"<br>");
+
+  chat.appendChild(div);
+  chat.scrollTop=chat.scrollHeight;
+  return div;
+ }
 document.getElementById("message").addEventListener("keydown",function(e){
  if(e.key==="Enter")sendMessage();
 });
