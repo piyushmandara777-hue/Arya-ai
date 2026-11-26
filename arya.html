@@ -629,13 +629,18 @@ function switchMode(mode){
  $("status").textContent=mode==="voice"?"Voice Mode तैयार है":"Chat Mode तैयार है";
 }
 
+
 function detectLanguage(text){
- const hindi=(text.match(/[\u0900-\u097F]/g)||[]).length;
- const latin=(text.match(/[a-zA-Z]/g)||[]).length;
+ const value=String(text||"");
+
+ const hindi=(value.match(/[\u0900-\u097F]/g)||[]).length;
+ const latin=(value.match(/[a-zA-Z]/g)||[]).length;
+
  if(hindi>0&&latin>0)return "Hinglish";
  if(hindi>0)return "Hindi";
  return "English";
-}
+ }
+ 
 
 async function askARYA(message){
  const history=conversation.slice(-12);
