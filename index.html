@@ -293,10 +293,240 @@ footer{
  .control-group{gap:9px}
  .small-control{font-size:10px}
 }
+ 
+/* ===== ARYA MODERN AUTH SCREEN ===== */
+
+#authScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 50% 15%, #12334d 0%, transparent 42%),
+    linear-gradient(145deg, #050b16, #0b1425 55%, #07101d);
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 410px;
+  padding: 32px 25px 22px;
+  border: 1px solid rgba(84,214,255,.18);
+  border-radius: 25px;
+  background: rgba(12,24,42,.88);
+  box-shadow: 0 25px 80px rgba(0,0,0,.45),
+              0 0 35px rgba(40,180,255,.08);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.auth-logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-orb {
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 15px;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  color: #54d6ff;
+  font-size: 35px;
+  background: linear-gradient(145deg,#123b59,#101d32);
+  border: 1px solid rgba(84,214,255,.5);
+  box-shadow: 0 0 30px rgba(84,214,255,.18);
+}
+
+.auth-logo h1 {
+  margin: 0;
+  color: #eefaff;
+  font-size: 27px;
+  letter-spacing: 3px;
+}
+
+.auth-logo p {
+  margin: 7px 0 0;
+  color: #54d6ff;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.auth-heading {
+  margin-bottom: 23px;
+}
+
+.auth-heading h2 {
+  margin: 0 0 7px;
+  color: #f2f8ff;
+  font-size: 25px;
+  font-weight: 650;
+}
+
+.auth-heading p {
+  margin: 0;
+  color: #91a5ba;
+  font-size: 13px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.auth-form label {
+  color: #dceaf5;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.auth-input {
+  min-height: 51px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 15px;
+  border: 1px solid #263d56;
+  border-radius: 13px;
+  background: #111d30;
+  transition: .2s ease;
+}
+
+.auth-input:focus-within {
+  border-color: #54d6ff;
+  box-shadow: 0 0 0 3px rgba(84,214,255,.10);
+}
+
+.auth-input span {
+  color: #54d6ff;
+  font-size: 18px;
+}
+
+.auth-input input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #f2f8ff;
+  background: transparent;
+  font-size: 14px;
+}
+
+.auth-input input::placeholder {
+  color: #71869d;
+}
+
+.auth-primary,
+.auth-secondary {
+  width: 100%;
+  min-height: 49px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.auth-primary {
+  margin-top: 13px;
+  color: #04111c;
+  border: 0;
+  background: linear-gradient(100deg,#54d6ff,#39aee8);
+  box-shadow: 0 7px 22px rgba(54,184,235,.20);
+}
+
+.auth-primary:active,
+.auth-secondary:active {
+  transform: scale(.98);
+}
+
+.auth-secondary {
+  color: #ccefff;
+  border: 1px solid #294761;
+  background: #14243a;
+}
+
+#authMessage {
+  min-height: 18px;
+  margin: 5px 0;
+  color: #54d6ff;
+  font-size: 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.auth-footer {
+  margin-top: 23px;
+  padding-top: 17px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  color: #60778e;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
 </style>
 </head>
 
 <body>
+
+<!-- MODERN ARYA LOGIN SCREEN -->
+<div id="authScreen">
+  <div class="auth-box">
+
+    <div class="auth-logo">
+      <div class="auth-orb">✦</div>
+      <h1>ARYA AI</h1>
+      <p>YOUR PERSONAL AI ASSISTANT</p>
+    </div>
+
+    <div class="auth-heading">
+      <h2 id="authTitle">Welcome back</h2>
+      <p id="authSubtitle">Sign in to continue your journey</p>
+    </div>
+
+    <div class="auth-form">
+
+      <label for="authEmail">Email address</label>
+      <div class="auth-input">
+        <span>✉</span>
+        <input type="email" id="authEmail"
+          placeholder="Enter your email"
+          autocomplete="email">
+      </div>
+
+      <label for="authPassword">Password</label>
+      <div class="auth-input">
+        <span>⌑</span>
+        <input type="password" id="authPassword"
+          placeholder="Enter your password"
+          autocomplete="current-password">
+      </div>
+
+      <button id="loginBtn" class="auth-primary">
+        Sign In
+      </button>
+
+      <button id="signupBtn" class="auth-secondary">
+        Create Account
+      </button>
+
+      <p id="authMessage"></p>
+    </div>
+
+    <div class="auth-footer">
+      SECURE PERSONAL ACCESS
+    </div>
+
+  </div>
+</div>
+
 
 <header>
  <div class="brand">
@@ -308,15 +538,26 @@ footer{
  </div>
 
  <div class="header-right">
-  <div class="online"><span class="online-dot"></span> SYSTEM ONLINE</div>
+  <div class="online">
+   <span class="online-dot"></span> SYSTEM ONLINE
+  </div>
+
   <button class="header-btn" onclick="newChat()" title="New chat">
    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
   </button>
+
   <button class="header-btn" onclick="clearChat()" title="Clear chat">
    <svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/></svg>
   </button>
+
+  <button class="header-btn" onclick="logoutArya()" title="Logout">
+   <svg viewBox="0 0 24 24">
+    <path d="M10 17l5-5-5-5M15 12H3M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/>
+   </svg>
+  </button>
  </div>
 </header>
+
 
 <main id="mainArea">
  <div class="dashboard">
@@ -546,30 +787,148 @@ function saveHistory(){
  }catch(e){}
 }
 
-function manageMemory(){
- const choice = prompt(
-  "ARYA MEMORY\n\n1 = Memory देखें\n2 = Memory बदलें\n3 = Memory मिटाएँ"
- );
 
- if(choice === "1"){
-  alert(memory || "अभी कोई Memory सेव नहीं है।");
- }
+// ==============================
+// ARYA PERMANENT CLOUD MEMORY
+// ==============================
 
- if(choice === "2"){
-  const updated = prompt("ARYA को क्या याद रखना चाहिए?",memory);
-  if(updated !== null){
-   memory = updated.slice(0,4000);
-   localStorage.setItem(MEMORY_KEY,memory);
-   alert("Memory सेव हो गई।");
+async function manageMemory() {
+  try {
+    const { data: sessionData, error: sessionError } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError || !sessionData.session) {
+      alert("पहले Login करें।");
+      return;
+    }
+
+    const token = sessionData.session.access_token;
+
+    const response = await fetch(
+      "https://arya-backend-2.onrender.com/memory",
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Memory load नहीं हुई।");
+    }
+
+    const memories = result.memories || [];
+
+    const choice = prompt(
+      "ARYA PERMANENT MEMORY\n\n" +
+      "1 = Memory देखें\n" +
+      "2 = नई Memory सेव करें\n" +
+      "3 = Memory मिटाएँ"
+    );
+
+    // VIEW MEMORY
+    if (choice === "1") {
+      if (memories.length === 0) {
+        alert("अभी कोई Memory सेव नहीं है।");
+        return;
+      }
+
+      const list = memories.map((item, index) =>
+        `${index + 1}. ${item.memory_key}: ${item.memory_value}`
+      ).join("\n\n");
+
+      alert(list);
+    }
+
+    // SAVE NEW MEMORY
+    if (choice === "2") {
+      const key = prompt("Memory का नाम लिखें:");
+
+      if (!key || !key.trim()) return;
+
+      const value = prompt("ARYA को क्या याद रखना चाहिए?");
+
+      if (!value || !value.trim()) return;
+
+      const saveResponse = await fetch(
+        "https://arya-backend-2.onrender.com/memory",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            memory_key: key.trim(),
+            memory_value: value.trim(),
+            category: "general"
+          })
+        }
+      );
+
+      const saveResult = await saveResponse.json();
+
+      if (!saveResponse.ok) {
+        throw new Error(saveResult.error || "Memory सेव नहीं हुई।");
+      }
+
+      alert("ARYA की Permanent Memory सेव हो गई!");
+    }
+
+    // DELETE MEMORY
+    if (choice === "3") {
+      if (memories.length === 0) {
+        alert("मिटाने के लिए कोई Memory नहीं है।");
+        return;
+      }
+
+      const list = memories.map((item, index) =>
+        `${index + 1}. ${item.memory_key}: ${item.memory_value}`
+      ).join("\n\n");
+
+      const selected = prompt(
+        "किस Memory को मिटाना है? उसका नंबर लिखें:\n\n" + list
+      );
+
+      if (selected === null) return;
+
+      const index = Number(selected) - 1;
+
+      if (!Number.isInteger(index) || index < 0 || index >= memories.length) {
+        alert("गलत नंबर!");
+        return;
+      }
+
+      if (!confirm("क्या इस Memory को मिटाना चाहते हैं?")) return;
+
+      const deleteResponse = await fetch(
+        `https://arya-backend-2.onrender.com/memory/${encodeURIComponent(memories[index].id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }
+      );
+
+      const deleteResult = await deleteResponse.json();
+
+      if (!deleteResponse.ok) {
+        throw new Error(deleteResult.error || "Memory नहीं मिटाई जा सकी।");
+      }
+
+      alert("Memory मिटा दी गई!");
+    }
+
+  } catch (error) {
+    console.error("ARYA Memory Error:", error);
+    alert(error.message || "Memory में समस्या आई।");
   }
- }
-
- if(choice === "3" && confirm("क्या Memory मिटानी है?")){
-  memory = "";
-  localStorage.removeItem(MEMORY_KEY);
-  alert("Memory मिटा दी गई।");
- }
 }
+
 
 function showSources(parent,sources){
  if(!Array.isArray(sources) || !sources.length) return;
@@ -613,14 +972,29 @@ async function sendMessage(textFromMic){
  const typingBubble = showTyping();
  const previousHistory = conversationHistory.slice(-12);
 
- try{
-  const response = await fetch(API_URL,{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    message:text,
-    history:previousHistory,
-    memory:memory
+
+try {
+  const { data: sessionData, error: sessionError } =
+    await supabaseClient.auth.getSession();
+
+  if (sessionError || !sessionData.session) {
+    throw new Error("Please login first.");
+  }
+
+  const accessToken = sessionData.session.access_token;
+
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({
+      message: text,
+      history: previousHistory
+    })
+  });
+
    })
   });
 
@@ -782,6 +1156,145 @@ if ("serviceWorker" in navigator) {
       .catch(error => console.log("PWA Error:", error));
   });
 }
+ 
+// ==============================
+// ARYA AUTHENTICATION SYSTEM
+// ==============================
+
+const authScreen = document.getElementById("authScreen");
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
+const authMessage = document.getElementById("authMessage");
+
+function showAuthMessage(message) {
+  authMessage.textContent = message;
+}
+
+function openAryaApp() {
+  authScreen.style.display = "none";
+}
+
+function lockAryaApp() {
+  authScreen.style.display = "flex";
+}
+
+loginBtn.addEventListener("click", async () => {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  if (!email || !password) {
+    showAuthMessage("Email aur password dono bhariye.");
+    return;
+  }
+
+  loginBtn.disabled = true;
+  showAuthMessage("Signing in...");
+
+  try {
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if (error) throw error;
+
+    showAuthMessage("Login successful!");
+    openAryaApp();
+
+  } catch (error) {
+    showAuthMessage(error.message || "Login failed.");
+  } finally {
+    loginBtn.disabled = false;
+  }
+});
+
+signupBtn.addEventListener("click", async () => {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  if (!email || !password) {
+    showAuthMessage("Email aur password dono bhariye.");
+    return;
+  }
+
+  if (password.length < 8) {
+    showAuthMessage("Password kam se kam 8 characters ka ho.");
+    return;
+  }
+
+  signupBtn.disabled = true;
+  showAuthMessage("Creating your account...");
+
+  try {
+    const { data, error } =
+      await supabaseClient.auth.signUp({
+        email,
+        password
+      });
+
+    if (error) throw error;
+
+    if (data.session) {
+      showAuthMessage("Account created successfully!");
+      openAryaApp();
+    } else {
+      showAuthMessage(
+        "Account created! Email check karke confirmation link par click karein, phir Login karein."
+      );
+    }
+
+  } catch (error) {
+    showAuthMessage(error.message || "Signup failed.");
+  } finally {
+    signupBtn.disabled = false;
+  }
+});
+
+// Check existing login session
+async function checkAryaLogin() {
+  lockAryaApp();
+
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error || !data.session) {
+    lockAryaApp();
+    return;
+  }
+
+  openAryaApp();
+}
+
+checkAryaLogin();
+ checkAryaLogin();
+
+async function logoutArya() {
+  if (!confirm("क्या आप ARYA से Logout करना चाहते हैं?")) {
+    return;
+  }
+
+  stopSpeaking();
+
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    alert("Logout नहीं हो पाया: " + error.message);
+    return;
+  }
+
+  lockAryaApp();
+  showAuthMessage("आप सफलतापूर्वक Logout हो गए।");
+}
+
+// Track login and logout changes
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    openAryaApp();
+  } else {
+    lockAryaApp();
+  }
+});
+
 </script>
 </body>
 </html>
