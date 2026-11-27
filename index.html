@@ -409,6 +409,15 @@ footer{
 
 <script>
 const API_URL = "https://arya-backend-2.onrender.com/chat";
+ // SUPABASE CONFIGURATION
+const SUPABASE_URL = "https://mwoikioyrzkjtyohxnxm.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY = "Rg56V4SOh_85WY2h8SzmAg_lcRLrp8E";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 const HISTORY_KEY = "arya_chat_history_v1";
 const MEMORY_KEY = "arya_memory_v1";
 
