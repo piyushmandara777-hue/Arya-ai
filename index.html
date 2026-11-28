@@ -1288,10 +1288,13 @@ function toggleSidebar(){
 
 /* Close sidebar after selecting on mobile */
 function closeSidebar(){
- if(window.innerWidth <= 600){
-  document.getElementById("aryaSidebar")
-   .classList.remove("open");
- }
+ const sidebar = document.getElementById("aryaSidebar");
+ const toggle = document.getElementById("sidebarToggle");
+ const overlay = document.getElementById("sidebarOverlay");
+
+ sidebar.classList.remove("open");
+ overlay.classList.remove("active");
+ toggle.style.display = "block";
 }
 /* Restore saved chat */
 function loadHistory(){
