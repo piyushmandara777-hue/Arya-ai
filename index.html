@@ -958,47 +958,78 @@ function showSources(parent,sources){
  if(box.children.length) parent.appendChild(box);
 }
 
+
 /* Send message */
 async function sendMessage(textFromMic){
- if(isSending) return;
+  if(isSending) return;
 
- const text = (textFromMic || messageInput.value).trim();
- if(!text) return;
+  const text = (textFromMic || messageInput.value).trim();
+  if(!text) return;
 
- messageInput.value = "";
- messageInput.style.height = "42px";
+  messageInput.value = "";
+  messageInput.style.height = "42px";
 
- addMessage(text,"user");
- isSending = true;
+  addMessage(text,"user");
+  isSending = true;
 
- const typingBubble = showTyping();
- const previousHistory = conversationHistory.slice(-12);
+  const typingBubble = showTyping();
+  const previousHistory = conversationHistory.slice(-12);
 
+  try {
+    const { data: sessionData, error: sessionError } =
+      await supabaseClient.auth.getSession();
 
-try {
-  const { data: sessionData, error: sessionError } =
-    await supabaseClient.auth.getSession();
+    if (sessionError || !sessionData.session) {
+      throw new Error("Please login first.");
+    }
 
-  if (sessionError || !sessionData.session) {
-    throw new Error("Please login first.");
+    const accessToken = sessionData.session.access_token;
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        message: text,
+        history: previousHistory
+      })
+    });
+
+    const data = await response.json();
+    if(!response.ok) throw new Error(data.error || "Server error");
+
+    const answer = data.reply || data.response || data.message || "मुझे जवाब नहीं मिला।";
+
+    typingBubble.classList.remove("typing");
+    typingBubble.textContent = answer;
+
+    showSources(typingBubble.parentElement,data.sources);
+
+    conversationHistory.push(
+      {role:"user",text:text},
+      {role:"model",text:answer}
+    );
+
+    conversationHistory = conversationHistory.slice(-30);
+    saveHistory();
+
+    setStatus("Response received. Systems ready.");
+
+    if(voiceEnabled) speak(answer);
+
+  }catch(error){
+    typingBubble.classList.remove("typing");
+    typingBubble.textContent = "माफ़ कीजिए, अभी जवाब नहीं मिल पाया। इंटरनेट या सर्वर की समस्या हो सकती है।";
+    setStatus("Connection error. Please try again.");
+    console.error(error);
+  }finally{
+    isSending = false;
+    mainArea.scrollTop = mainArea.scrollHeight;
   }
+}
 
-  const accessToken = sessionData.session.access_token;
-
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${accessToken}`
-    },
-    body: JSON.stringify({
-      message: text,
-      history: previousHistory
-    })
-  });
-
-   })
-  });
 
   const data = await response.json();
   if(!response.ok) throw new Error(data.error || "Server error");
