@@ -1007,6 +1007,151 @@ function saveChats() {
  }
 }
 
+
+
+// =====================================
+// ARYA CLOUD CHAT SYNC
+// =====================================
+const CLOUD_CHAT_API = "https://arya-backend-2.onrender.com/chats";
+const CHAT_OWNER_KEY = "arya_chat_owner_v1";
+let cloudSyncInProgress = false;
+
+async function getAryaAccessToken(){
+ const {data,error}=await supabaseClient.auth.getSession();
+ if(error) throw error;
+ if(!data.session) return null;
+ return data.session.access_token;
+}
+
+async function saveCloudChat(chatRecord){
+ if(!chatRecord || cloudSyncInProgress) return;
+ try{
+  const token=await getAryaAccessToken();
+  if(!token) return;
+  const response=await fetch(CLOUD_CHAT_API,{
+   method:"POST",
+   headers:{
+    "Content-Type":"application/json",
+    "Authorization":`Bearer ${token}`
+   },
+   body:JSON.stringify({
+    client_id:chatRecord.id,
+    title:chatRecord.title||"New Chat",
+    messages:Array.isArray(chatRecord.messages)?chatRecord.messages:[]
+   })
+  });
+  if(!response.ok){
+   const data=await response.json().catch(()=>({}));
+   throw new Error(data.error||"Cloud save failed");
+  }
+ }catch(error){
+  console.warn("ARYA Cloud Chat Save Error:",error);
+ }
+}
+
+async function deleteCloudChat(chatId){
+ try{
+  const token=await getAryaAccessToken();
+  if(!token) return;
+  const response=await fetch(CLOUD_CHAT_API+"/"+encodeURIComponent(chatId),{
+   method:"DELETE",
+   headers:{"Authorization":`Bearer ${token}`}
+  });
+  if(!response.ok) throw new Error("Cloud delete failed");
+ }catch(error){
+  console.warn("ARYA Cloud Chat Delete Error:",error);
+ }
+}
+
+async function syncCloudChats(){
+ if(cloudSyncInProgress) return;
+ cloudSyncInProgress=true;
+ try{
+  const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+  if(sessionError||!sessionData.session) return;
+  const session=sessionData.session;
+  const userId=session.user.id;
+  const token=session.access_token;
+
+  // Never carry one account's local chats into another account.
+  const previousOwner=localStorage.getItem(CHAT_OWNER_KEY);
+  if(previousOwner && previousOwner!==userId){
+   chats=[];
+   conversationHistory=[];
+   activeChatId=null;
+   localStorage.removeItem(CHATS_KEY);
+   localStorage.removeItem(ACTIVE_CHAT_KEY);
+   localStorage.removeItem(HISTORY_KEY);
+  }
+  localStorage.setItem(CHAT_OWNER_KEY,userId);
+
+  const response=await fetch(CLOUD_CHAT_API,{
+   method:"GET",
+   headers:{"Authorization":`Bearer ${token}`}
+  });
+  const result=await response.json();
+  if(!response.ok) throw new Error(result.error||"Cloud load failed");
+
+  const cloudRecords=Array.isArray(result.chats)?result.chats:[];
+  const localById=new Map(chats.map(item=>[item.id,item]));
+  const merged=[];
+  const cloudIds=new Set();
+
+  cloudRecords.forEach(record=>{
+   const id=String(record.client_id||record.id||"");
+   if(!id) return;
+   cloudIds.add(id);
+   const cloudChat={
+    id,
+    title:record.title||"New Chat",
+    messages:Array.isArray(record.messages)?record.messages:[],
+    createdAt:Date.parse(record.created_at)||Date.now(),
+    updatedAt:Date.parse(record.updated_at)||Date.now()
+   };
+   const localChat=localById.get(id);
+   if(localChat && Number(localChat.updatedAt||0)>cloudChat.updatedAt){
+    merged.push(localChat);
+   }else{
+    merged.push(cloudChat);
+   }
+  });
+
+  // Keep local-only chats and upload them, plus locally newer chats.
+  chats.forEach(localChat=>{
+   if(!cloudIds.has(localChat.id)){
+    merged.push(localChat);
+   }
+  });
+
+  merged.sort((a,b)=>Number(b.updatedAt||0)-Number(a.updatedAt||0));
+  chats=merged;
+  if(!chats.length) chats=[createChatRecord([])];
+  if(!chats.some(item=>item.id===activeChatId)){
+   activeChatId=chats[0].id;
+  }
+  const active=chats.find(item=>item.id===activeChatId);
+  conversationHistory=Array.isArray(active?.messages)?active.messages.slice(-30):[];
+  localStorage.setItem(HISTORY_KEY,JSON.stringify(conversationHistory));
+  saveChats();
+  renderHistoryList();
+
+  // Push local-only or local-newer records to cloud.
+  for(const item of chats){
+   const cloud=cloudRecords.find(record=>String(record.client_id||record.id)===item.id);
+   const cloudUpdated=cloud?Date.parse(cloud.updated_at)||0:0;
+   if(!cloud || Number(item.updatedAt||0)>cloudUpdated){
+    await saveCloudChat(item);
+   }
+  }
+  setStatus("Chats synced with cloud.");
+ }catch(error){
+  console.warn("ARYA Cloud Sync Error:",error);
+  setStatus("Cloud sync unavailable. Local chats kept.");
+ }finally{
+  cloudSyncInProgress=false;
+ }
+}
+
 function loadChatsStorage() {
  try {
   const saved = JSON.parse(
@@ -1169,6 +1314,7 @@ function saveHistory(){
 
   saveChats();
   renderHistoryList();
+  if(activeChat) saveCloudChat(activeChat);
 
  }catch(error){
   console.error("ARYA History Save Error:",error);
@@ -1499,6 +1645,7 @@ function newChat(){
  const newRecord = createChatRecord([]);
  chats.unshift(newRecord);
  activeChatId = newRecord.id;
+ saveCloudChat(newRecord);
 
  // नई चैट शुरू करो
  conversationHistory = [];
@@ -1644,6 +1791,7 @@ function renameChat(chatId){
 
  saveChats();
  renderHistoryList();
+ saveCloudChat(item);
 }
 
 /* DELETE CHAT */
@@ -1655,6 +1803,7 @@ function deleteChat(chatId){
  if(!confirm("क्या आप यह चैट Delete करना चाहते हैं?")) return;
 
  chats = chats.filter(chat => chat.id !== chatId);
+ deleteCloudChat(chatId);
 
  if(activeChatId === chatId){
 
@@ -1869,6 +2018,7 @@ async function checkAryaLogin() {
   }
 
   openAryaApp();
+  syncCloudChats();
 }
 
 checkAryaLogin();
@@ -1897,6 +2047,7 @@ window.supabaseClient.auth.onAuthStateChange((event, session) => {
                                        
   if (session) {
     openAryaApp();
+    if(event==="SIGNED_IN" || event==="TOKEN_REFRESHED") syncCloudChats();
   } else {
     lockAryaApp();
   }
