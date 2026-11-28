@@ -1257,7 +1257,12 @@ function newChat(){
 
 function toggleSidebar(){
  const sidebar = document.getElementById("aryaSidebar");
+ const toggle = document.getElementById("sidebarToggle");
+
  sidebar.classList.toggle("open");
+
+ toggle.style.display =
+  sidebar.classList.contains("open") ? "none" : "block";
 }
 
 /* Close sidebar after selecting on mobile */
