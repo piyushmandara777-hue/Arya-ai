@@ -476,7 +476,106 @@ footer{
   letter-spacing: 2px;
   text-align: center;
 }
+/* ARYA CHATGPT STYLE SIDEBAR */
 
+.sidebar-toggle{
+ position:fixed;
+ top:82px;
+ left:14px;
+ z-index:20;
+ width:42px;
+ height:42px;
+ border:1px solid var(--line);
+ border-radius:12px;
+ background:#0b1728;
+ color:var(--cyan);
+ font-size:21px;
+}
+
+.arya-sidebar{
+ position:fixed;
+ top:68px;
+ left:0;
+ bottom:0;
+ width:270px;
+ z-index:15;
+ padding:18px 14px;
+ background:#091321;
+ border-right:1px solid var(--line);
+ transform:translateX(-100%);
+ transition:transform .25s ease;
+ display:flex;
+ flex-direction:column;
+ gap:16px;
+}
+
+.arya-sidebar.open{
+ transform:translateX(0);
+}
+
+.sidebar-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+
+.sidebar-brand{
+ color:var(--cyan);
+ font-size:17px;
+ font-weight:bold;
+ letter-spacing:2px;
+}
+
+.sidebar-close{
+ background:transparent;
+ border:0;
+ color:var(--muted);
+ font-size:25px;
+}
+
+.sidebar-new-chat{
+ width:100%;
+ padding:13px;
+ border:1px solid #36bfff55;
+ border-radius:12px;
+ background:#10263b;
+ color:var(--text);
+ text-align:left;
+}
+
+.sidebar-search{
+ width:100%;
+}
+
+#historySearch{
+ width:100%;
+ padding:12px;
+ border:1px solid var(--line);
+ border-radius:10px;
+ outline:none;
+ background:#101f32;
+ color:var(--text);
+}
+
+.sidebar-section{
+ color:var(--muted);
+ font-size:11px;
+ letter-spacing:1.5px;
+}
+
+.history-list{
+ overflow-y:auto;
+ flex:1;
+}
+
+.history-empty{
+ color:var(--muted);
+ font-size:13px;
+}
+
+@media(max-width:600px){
+ .arya-sidebar{width:280px}
+}
 </style>
 
 
@@ -672,6 +771,7 @@ window.supabaseClient =
 const supabaseClient =
  window.supabaseClient;
 const HISTORY_KEY = "arya_chat_history_v1";
+ const CHATS_KEY = "arya_all_chats_v1";
 const MEMORY_KEY = "arya_memory_v1";
 
 let voiceEnabled = true;
@@ -1133,7 +1233,20 @@ function newChat(){
  stopSpeaking();
  setStatus("New session ready.");
 }
+/* ARYA SIDEBAR CONTROL */
 
+function toggleSidebar(){
+ const sidebar = document.getElementById("aryaSidebar");
+ sidebar.classList.toggle("open");
+}
+
+/* Close sidebar after selecting on mobile */
+function closeSidebar(){
+ if(window.innerWidth <= 600){
+  document.getElementById("aryaSidebar")
+   .classList.remove("open");
+ }
+}
 /* Restore saved chat */
 function loadHistory(){
  conversationHistory.slice(-30).forEach(item=>{
