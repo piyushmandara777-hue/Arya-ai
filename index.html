@@ -1090,7 +1090,10 @@ async function syncCloudChats(){
    headers:{"Authorization":`Bearer ${token}`}
   });
   const result=await response.json();
-  if(!response.ok) throw new Error(result.error||"Cloud load failed");
+  if(!response.ok){
+   const detail=result.diagnostic?.message||result.diagnostic?.details||result.diagnostic?.hint;
+   throw new Error((result.error||"Cloud load failed")+(detail?" — "+detail:""));
+  }
 
   const cloudRecords=Array.isArray(result.chats)?result.chats:[];
   const localById=new Map(chats.map(item=>[item.id,item]));
