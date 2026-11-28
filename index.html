@@ -664,7 +664,27 @@ footer{
   </button>
  </div>
 </header>
+<button id="sidebarToggle" class="sidebar-toggle"
+        onclick="toggleSidebar()">☰</button>
 
+<aside id="aryaSidebar" class="arya-sidebar">
+  <div class="sidebar-top">
+    <div class="sidebar-brand">ARYA AI</div>
+    <button onclick="toggleSidebar()" class="sidebar-close">×</button>
+  </div>
+
+  <button class="sidebar-new-chat" onclick="newChat()">
+    + New Chat
+  </button>
+
+  <input id="historySearch" type="text"
+         placeholder="Search chats...">
+
+  <div class="sidebar-section">RECENT CHATS</div>
+  <div id="historyList" class="history-list">
+    <p class="history-empty">Your chats will appear here.</p>
+  </div>
+   </aside>
 
 <main id="mainArea">
  <div class="dashboard">
