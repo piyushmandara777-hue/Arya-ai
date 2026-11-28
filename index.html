@@ -699,7 +699,45 @@ color:#17283c;
  opacity:1;
  visibility:visible;
 }
+/* CHAT HISTORY ACTIONS */
+.history-row{
+ display:flex;
+ align-items:center;
+ gap:5px;
+ margin:5px 8px;
+}
+
+.history-row .history-item{
+ flex:1;
+ min-width:0;
+ text-align:left;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+}
+
+.history-row button{
+ border:1px solid #d8e8f5;
+ border-radius:8px;
+ background:#f1f7fc;
+ color:#42617b;
+ padding:7px 9px;
+ font-size:11px;
+ cursor:pointer;
+}
+
+.history-row button:hover{
+ background:#dff3ff;
+ border-color:#80cfff;
+}
+
+.history-row button.active{
+ background:#e2f4ff;
+ border-color:#54bfff;
+ color:#087ac2;
+}
 </style>
+ 
 
 
 </head>
@@ -933,7 +971,69 @@ try{
 }
 
 let memory = localStorage.getItem(MEMORY_KEY) || "";
+// =================================
+// ARYA MULTI-CHAT STORAGE
+// =================================
 
+const CHATS_KEY = "arya_all_chats_v1";
+const ACTIVE_CHAT_KEY = "arya_active_chat_v1";
+
+let chats = [];
+let activeChatId = null;
+
+function createChatRecord(messages = []) {
+ const firstMessage = messages.find(
+  item => item.role === "user"
+ );
+
+ return {
+  id: "chat_" + Date.now() + "_" + Math.random().toString(36).slice(2,7),
+  title: firstMessage
+   ? String(firstMessage.text).slice(0,35)
+   : "New Chat",
+  messages: messages,
+  createdAt: Date.now(),
+  updatedAt: Date.now()
+ };
+}
+
+function saveChats() {
+ try {
+  localStorage.setItem(CHATS_KEY, JSON.stringify(chats));
+  localStorage.setItem(ACTIVE_CHAT_KEY, activeChatId || "");
+ } catch(error) {
+  console.error("ARYA Chat Save Error:", error);
+ }
+}
+
+function loadChatsStorage() {
+ try {
+  const saved = JSON.parse(
+   localStorage.getItem(CHATS_KEY) || "null"
+  );
+
+  if(Array.isArray(saved) && saved.length) {
+   chats = saved;
+  } else {
+   chats = [createChatRecord(conversationHistory)];
+   saveChats();
+  }
+
+  const savedActiveId = localStorage.getItem(ACTIVE_CHAT_KEY);
+
+  activeChatId = chats.some(item => item.id === savedActiveId)
+   ? savedActiveId
+   : chats[0].id;
+
+ } catch(error) {
+  console.error("ARYA Multi-Chat Load Error:", error);
+  chats = [createChatRecord(conversationHistory)];
+  activeChatId = chats[0].id;
+  saveChats();
+ }
+}
+
+loadChatsStorage();
 const chat = document.getElementById("chat");
 const mainArea = document.getElementById("mainArea");
 const messageInput = document.getElementById("messageInput");
@@ -1038,8 +1138,40 @@ function stopSpeaking(){
 
 function saveHistory(){
  try{
-  localStorage.setItem(HISTORY_KEY,JSON.stringify(conversationHistory.slice(-30)));
- }catch(e){}
+  conversationHistory = conversationHistory.slice(-30);
+
+  localStorage.setItem(
+   HISTORY_KEY,
+   JSON.stringify(conversationHistory)
+  );
+
+  let activeChat = chats.find(
+   item => item.id === activeChatId
+  );
+
+  if(!activeChat){
+   activeChat = createChatRecord();
+   chats.unshift(activeChat);
+   activeChatId = activeChat.id;
+  }
+
+  activeChat.messages = [...conversationHistory];
+  activeChat.updatedAt = Date.now();
+
+  const firstMessage = conversationHistory.find(
+   item => item.role === "user"
+  );
+
+  if(firstMessage){
+   activeChat.title = String(firstMessage.text).slice(0,35);
+  }
+
+  saveChats();
+  renderHistoryList();
+
+ }catch(error){
+  console.error("ARYA History Save Error:",error);
+ }
 }
 
 
@@ -1358,9 +1490,20 @@ function clearChat(){
 
 /* New chat */
 function newChat(){
- chat.innerHTML = "";
- conversationHistory = [];
+
+ // पहले पुरानी चैट सुरक्षित करो
  saveHistory();
+
+ // नई चैट बनाओ
+ const newRecord = createChatRecord([]);
+ chats.unshift(newRecord);
+ activeChatId = newRecord.id;
+
+ // नई चैट शुरू करो
+ conversationHistory = [];
+ saveChats();
+renderHistoryList();
+ chat.innerHTML = "";
 
  const welcome = document.createElement("div");
  welcome.className = "welcome";
@@ -1401,14 +1544,196 @@ function closeSidebar(){
  overlay.classList.remove("active");
  toggle.style.display = "block";
 }
-/* Restore saved chat */
+/* Restore active chat */
 function loadHistory(){
- conversationHistory.slice(-30).forEach(item=>{
-  if(item.role === "user") addMessage(item.text,"user");
-  else if(item.role === "model") addMessage(item.text,"bot");
+
+ const activeChat = chats.find(
+  item => item.id === activeChatId
+ );
+
+ if(!activeChat){
+  conversationHistory = [];
+  return;
+ }
+
+ conversationHistory = Array.isArray(activeChat.messages)
+  ? activeChat.messages.slice(-30)
+  : [];
+
+ conversationHistory.forEach(item=>{
+  if(item.role === "user"){
+   addMessage(item.text,"user");
+  }
+  else if(item.role === "model"){
+   addMessage(item.text,"bot");
+  }
+ });
+}
+/* ARYA CHAT HISTORY LIST */
+function renderHistoryList(){
+
+ const list = document.getElementById("historyList");
+ const search = document.getElementById("historySearch");
+
+ if(!list) return;
+
+ const query = search ? search.value.toLowerCase().trim() : "";
+ list.innerHTML = "";
+
+ const filteredChats = [...chats]
+  .sort((a,b) => b.updatedAt - a.updatedAt)
+  .filter(item =>
+   String(item.title || "New Chat").toLowerCase().includes(query)
+  );
+
+ if(filteredChats.length === 0){
+  const empty = document.createElement("p");
+  empty.className = "history-empty";
+  empty.textContent = "No chats found.";
+  list.appendChild(empty);
+  return;
+ }
+
+ filteredChats.forEach(item => {
+
+  const row = document.createElement("div");
+  row.className = "history-row";
+
+  const openButton = document.createElement("button");
+  openButton.type = "button";
+  openButton.className = "history-item";
+  openButton.textContent = item.title || "New Chat";
+
+  if(item.id === activeChatId){
+   openButton.classList.add("active");
+  }
+
+  openButton.onclick = () => openChat(item.id);
+
+  const renameButton = document.createElement("button");
+  renameButton.type = "button";
+  renameButton.textContent = "Rename";
+  renameButton.onclick = () => renameChat(item.id);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.textContent = "Delete";
+  deleteButton.onclick = () => deleteChat(item.id);
+
+  row.appendChild(openButton);
+  row.appendChild(renameButton);
+  row.appendChild(deleteButton);
+
+  list.appendChild(row);
  });
 }
 
+/* RENAME CHAT */
+function renameChat(chatId){
+
+ const item = chats.find(chat => chat.id === chatId);
+ if(!item) return;
+
+ const newTitle = prompt("Enter new chat name:",item.title || "");
+
+ if(newTitle === null || !newTitle.trim()) return;
+
+ item.title = newTitle.trim().slice(0,50);
+ item.updatedAt = Date.now();
+
+ saveChats();
+ renderHistoryList();
+}
+
+/* DELETE CHAT */
+function deleteChat(chatId){
+
+ const item = chats.find(chat => chat.id === chatId);
+ if(!item) return;
+
+ if(!confirm("क्या आप यह चैट Delete करना चाहते हैं?")) return;
+
+ chats = chats.filter(chat => chat.id !== chatId);
+
+ if(activeChatId === chatId){
+
+  if(chats.length > 0){
+   activeChatId = chats[0].id;
+   conversationHistory = Array.isArray(chats[0].messages)
+    ? chats[0].messages.slice(-30)
+    : [];
+  }else{
+   const freshChat = createChatRecord([]);
+   chats.unshift(freshChat);
+   activeChatId = freshChat.id;
+   conversationHistory = [];
+  }
+
+  chat.innerHTML = "";
+
+  conversationHistory.forEach(item => {
+   if(item.role === "user") addMessage(item.text,"user");
+   else if(item.role === "model") addMessage(item.text,"bot");
+  });
+
+  if(conversationHistory.length === 0){
+   const welcome = document.createElement("div");
+   welcome.className = "welcome";
+   welcome.innerHTML = `
+    <strong>नमस्ते, मैं ARYA हूँ।</strong><br>
+    Your personal AI assistant.<br>
+    आप हिंदी या English में बात कर सकते हैं।
+   `;
+   chat.appendChild(welcome);
+  }
+ }
+
+ saveChats();
+ renderHistoryList();
+ setStatus("Chat updated.");
+}
+
+/* OPEN OLD CHAT */
+function openChat(chatId){
+
+ saveHistory();
+
+ const selectedChat = chats.find(item => item.id === chatId);
+ if(!selectedChat) return;
+
+ activeChatId = selectedChat.id;
+
+ conversationHistory = Array.isArray(selectedChat.messages)
+  ? selectedChat.messages.slice(-30)
+  : [];
+
+ chat.innerHTML = "";
+
+ conversationHistory.forEach(item => {
+  if(item.role === "user"){
+   addMessage(item.text,"user");
+  }
+  else if(item.role === "model"){
+   addMessage(item.text,"bot");
+  }
+ });
+
+ saveChats();
+ renderHistoryList();
+
+ if(typeof closeSidebar === "function"){
+  closeSidebar();
+ }
+
+ setStatus("Chat restored.");
+}
+
+/* SEARCH CHATS */
+const historySearchInput = document.getElementById("historySearch");
+
+if(historySearchInput){
+ historySearchInput.addEventListener("input",renderHistoryList);
+  }
 /* Enter to send */
 messageInput.addEventListener("keydown",function(e){
  if(e.key === "Enter" && !e.shiftKey){
@@ -1426,6 +1751,7 @@ messageInput.addEventListener("input",function(){
 /* Start */
 updateLanguageUI();
 loadHistory();
+ renderHistoryList();
 </script>
 <script>
 if ("serviceWorker" in navigator) {
