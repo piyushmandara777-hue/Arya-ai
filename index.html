@@ -1024,7 +1024,7 @@ async function getAryaAccessToken(){
 }
 
 async function saveCloudChat(chatRecord){
- if(!chatRecord || cloudSyncInProgress) return;
+ if(!chatRecord) return;
  try{
   const token=await getAryaAccessToken();
   if(!token) return;
