@@ -657,10 +657,12 @@ const SUPABASE_URL = "https://mwoikioyrzkjtyohxnxm.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY = "Rg56V4SOh_85WY2h8SzmAg_lcRLrp8E";
 
-const supabaseClient = window.supabase.createClient(
+window.supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
 );
+
+const supabaseClient = window.supabaseClient;
 const HISTORY_KEY = "arya_chat_history_v1";
 const MEMORY_KEY = "arya_memory_v1";
 
@@ -1225,7 +1227,7 @@ loginBtn.addEventListener("click", async () => {
 
   try {
     const { data, error } =
-      await supabaseClient.auth.signInWithPassword({
+      await window.supabaseClient.auth.signInWithPassword({
         email,
         password
       });
@@ -1261,7 +1263,7 @@ signupBtn.addEventListener("click", async () => {
 
   try {
     const { data, error } =
-      await supabaseClient.auth.signUp({
+      await window.supabaseClient.auth.signUp({
         email,
         password
       });
@@ -1288,7 +1290,7 @@ signupBtn.addEventListener("click", async () => {
 async function checkAryaLogin() {
   lockAryaApp();
 
-  const { data, error } = await supabaseClient.auth.getSession();
+  const { data, error } = await window.supabaseClient.auth.getSession();
 
   if (error || !data.session) {
     lockAryaApp();
@@ -1307,7 +1309,7 @@ async function logoutArya() {
 
   stopSpeaking();
 
-  const { error } = await supabaseClient.auth.signOut();
+  const { error } = await window.supabaseClient.auth.signOut();
 
   if (error) {
     alert("Logout नहीं हो पाया: " + error.message);
@@ -1319,7 +1321,9 @@ async function logoutArya() {
 }
 
 // Track login and logout changes
-supabaseClient.auth.onAuthStateChange((event, session) => {
+window.supabaseClient.auth.onAuthStateChange((event, session) => {
+
+                                       
   if (session) {
     openAryaApp();
   } else {
