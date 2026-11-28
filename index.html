@@ -1146,7 +1146,7 @@ async function syncCloudChats(){
   setStatus("Chats synced with cloud.");
  }catch(error){
   console.warn("ARYA Cloud Sync Error:",error);
-  setStatus("Cloud sync unavailable. Local chats kept.");
+  setStatus("Cloud sync error: "+(error.message||"unknown error")+" (local chats kept)");
  }finally{
   cloudSyncInProgress=false;
  }
