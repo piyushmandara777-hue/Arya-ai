@@ -237,6 +237,15 @@ main{
  border-radius:14px 4px 14px 14px;
  color:#17283c;
 }
+.feedback-actions{
+ display:flex;gap:7px;align-items:center;margin-top:8px;
+}
+.feedback-btn{
+ border:1px solid #c9dced;background:#fff;color:#52708c;
+ border-radius:8px;padding:5px 9px;font-size:11px;
+}
+.feedback-btn:hover{background:#eef7ff;border-color:#88c7f3}
+.feedback-status{font-size:11px;color:#6c8399}
 .typing{
  color:#168bff;
 }
@@ -1239,6 +1248,56 @@ function addMessage(text,type){
  return bubble;
 }
 
+async function sendReplyFeedback(buttonContainer, rating, userMessage, assistantReply){
+  const status = buttonContainer.querySelector(".feedback-status");
+  const buttons = buttonContainer.querySelectorAll(".feedback-btn");
+  buttons.forEach(button => button.disabled = true);
+  try{
+    const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+    if(sessionError || !sessionData.session) throw new Error("Login required");
+    const response=await fetch("https://arya-backend-2.onrender.com/feedback",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${sessionData.session.access_token}`
+      },
+      body:JSON.stringify({
+        rating,
+        user_message:userMessage,
+        assistant_reply:assistantReply,
+        note:""
+      })
+    });
+    const result=await response.json();
+    if(!response.ok) throw new Error(result.error||"Feedback failed");
+    status.textContent="Feedback saved";
+    buttons.forEach(button=>button.style.display="none");
+  }catch(error){
+    status.textContent="Feedback not saved";
+    buttons.forEach(button=>button.disabled=false);
+    console.error("ARYA feedback error:",error);
+  }
+}
+
+function addFeedbackControls(messageRow, userMessage, assistantReply){
+  const controls=document.createElement("div");
+  controls.className="feedback-actions";
+  const helpful=document.createElement("button");
+  helpful.className="feedback-btn";
+  helpful.type="button";
+  helpful.textContent="Helpful";
+  helpful.onclick=()=>sendReplyFeedback(controls,1,userMessage,assistantReply);
+  const notHelpful=document.createElement("button");
+  notHelpful.className="feedback-btn";
+  notHelpful.type="button";
+  notHelpful.textContent="Not helpful";
+  notHelpful.onclick=()=>sendReplyFeedback(controls,-1,userMessage,assistantReply);
+  const status=document.createElement("span");
+  status.className="feedback-status";
+  controls.append(helpful,notHelpful,status);
+  messageRow.appendChild(controls);
+}
+
 function showTyping(){
  const bubble = addMessage("ARYA is processing your request...", "bot");
  bubble.classList.add("typing");
@@ -1541,6 +1600,7 @@ async function sendMessage(textFromMic){
     typingBubble.textContent = answer;
 
     showSources(typingBubble.parentElement,data.sources);
+    addFeedbackControls(typingBubble.parentElement,text,answer);
 
     conversationHistory.push(
       {role:"user",text:text},
